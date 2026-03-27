@@ -1,19 +1,46 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
+import Image from 'next/image';
+import threeBars from '@/app/three-bars.png';
 export default function Sidebar() {
+	// 侧边栏收缩状态
 	const [isOpen, setIsOpen] = useState(true);
+
+	// 监听窗口大小变化，自动调整侧边栏状态
+	useEffect(() => {
+		const handleResize = () => {
+			if (window.innerWidth < 768) {
+				setIsOpen(false);
+			} else {
+				setIsOpen(true);
+			}
+		};
+
+		// 初始检查
+		handleResize();
+		window.addEventListener('resize', handleResize);
+
+		// 在组件被卸载（Unmount）销毁的时候（比如跳转页面），或者下一次这个 useEffect 重新执行之前才会跑return，清除之前的事件监听，避免内存泄漏和重复绑定事件
+		return () => window.removeEventListener('resize', handleResize);
+		// [] 表示不依赖任何随时会变化的变量。函数只会在这个组件第一次挂载到页面上（Mount）时执行一次
+	}, []);
 
 	return (
 		<nav
 			id='sidebar'
-			className={`flex flex-shrink-0 flex-col bg-[#171717] border-r border-[rgba(255,255,255,0.1)] transition-all duration-300 ${
-				isOpen ? 'w-[260px]' : 'w-0 overflow-hidden hidden'
+			className={`flex flex-shrink-0 flex-col [background:var(--app-sidebar)] border-r border-[rgba(255,255,255,0.1)] transition-all duration-300 overflow-hidden ${
+				isOpen ? 'w-[260px]' : 'w-[68px]'
 			}`}
 		>
-			<div className='px-4 py-4 flex items-center justify-between'>
-				<div className='h-8 w-8 rounded-full bg-white flex items-center justify-center flex-shrink-0'>
+			<div
+				className={`py-4 flex items-center transition-all duration-300 ${isOpen ? 'px-4 justify-between' : 'justify-center'}`}
+			>
+				{/* logo */}
+				<div
+					className={`h-8 w-8 rounded-full bg-white items-center justify-center flex-shrink-0 ${isOpen ? 'flex' : 'hidden'}`}
+				>
 					<svg
 						width='20'
 						height='20'
@@ -27,45 +54,23 @@ export default function Sidebar() {
 						></path>
 					</svg>
 				</div>
+				{/* Toggle Button */}
 				<button
-					className='text-[#a4a4a4] hover:text-white transition-colors'
+					className='cursor-pointer w-6 h-6 text-[#a4a4a4] hover:bg-[var(--app-hover)] transition-colors '
 					onClick={() => setIsOpen(!isOpen)}
 				>
-					<svg
-						width='24'
-						height='24'
-						viewBox='0 0 24 24'
-						fill='none'
-						stroke='currentColor'
-						strokeWidth='2'
-						strokeLinecap='round'
-						strokeLinejoin='round'
-					>
-						<line
-							x1='3'
-							y1='12'
-							x2='21'
-							y2='12'
-						></line>
-						<line
-							x1='3'
-							y1='6'
-							x2='21'
-							y2='6'
-						></line>
-						<line
-							x1='3'
-							y1='18'
-							x2='21'
-							y2='18'
-						></line>
-					</svg>
+					<Image
+						src={threeBars}
+						alt='sidebar toggle'
+						className='theme-adaptive-icon'
+					/>
 				</button>
 			</div>
 
 			{isOpen && (
 				<>
 					<div className='px-3 pb-3 space-y-1'>
+						{/* 新会话 */}
 						<button className='w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[rgba(255,255,255,0.15)] transition-colors group text-[#ececec]'>
 							<div className='text-[#a4a4a4] flex items-center justify-center w-5 h-5'>
 								<svg
@@ -83,10 +88,8 @@ export default function Sidebar() {
 								</svg>
 							</div>
 							<span className='text-sm font-medium'>New chat</span>
-							<span className='ml-auto text-xs text-[rgba(255,255,255,0.58)] font-medium'>
-								⌘O
-							</span>
 						</button>
+						{/* 搜索 */}
 						<button className='w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[rgba(255,255,255,0.15)] transition-colors group text-[#ececec]'>
 							<div className='text-[#a4a4a4] flex items-center justify-center w-5 h-5'>
 								<svg
@@ -113,12 +116,10 @@ export default function Sidebar() {
 								</svg>
 							</div>
 							<span className='text-sm font-medium'>Search chats</span>
-							<span className='ml-auto text-xs text-[rgba(255,255,255,0.58)] font-medium'>
-								⌘K
-							</span>
 						</button>
 					</div>
 
+					{/* 历史会话 */}
 					<div className='flex-1 overflow-y-auto px-3 space-y-1 py-2 border-t border-[rgba(255,255,255,0.1)]'>
 						<div className='px-3 py-2 text-[11px] font-semibold text-[rgba(255,255,255,0.4)] uppercase tracking-wider'>
 							Yesterday
@@ -160,6 +161,7 @@ export default function Sidebar() {
 						</button>
 					</div>
 
+					{/* 登陆注册 */}
 					<div className='mt-auto p-3'>
 						<div className='bg-[rgba(255,255,255,0.05)] rounded-2xl p-4 flex flex-col gap-3'>
 							<h3 className='font-semibold text-[#ececec] text-sm'>

@@ -1,4 +1,22 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+使用[variant](https://variant.com/)进行UI设计的AIChat网站：
+
+![](img/image.png)
+
+![alt text](image.png)
+
+![alt text](image-1.png)
+
+## Stack
+
+- React 19
+
+- Typescript 5
+
+- NextJS 16
+
+- Ant-Design/X 2.4
+
+- TailwindCSS 4
 
 ## Getting Started
 
