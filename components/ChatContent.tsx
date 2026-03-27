@@ -16,6 +16,13 @@ import type {
 } from '@ant-design/x';
 import { Avatar } from 'antd';
 import aiAvatar from '../app/ai.jpg';
+import {
+	CHAT_FIRST_USER_MESSAGE_EVENT,
+	SIDEBAR_ACTIVE_CONVERSATION_EVENT,
+	SIDEBAR_NEW_CONVERSATION_EVENT,
+	type SidebarActiveConversationDetail,
+	type SidebarNewConversationDetail,
+} from './chatEvents';
 import Prompt from './Prompt';
 
 const ChatSender = dynamic(() => import('./ChatSender'), {
@@ -39,6 +46,53 @@ type ChatMessage = {
 const AI_KEY_PREFIX = 'ai-';
 const USER_KEY_PREFIX = 'user-';
 
+const MOCK_CONVERSATION_MESSAGES: Record<string, ChatMessage[]> = {
+	'conv-1': [
+		{
+			key: 'user-1001',
+			role: 'user',
+			content: '我想搭一个可扩展的前端设计系统。',
+		},
+		{
+			key: 'ai-1001',
+			role: 'ai',
+			content:
+				'建议先定义 token、基础组件和页面模板三层结构，再通过统一规范做版本化管理。',
+		},
+	],
+	'conv-2': [
+		{
+			key: 'user-1002',
+			role: 'user',
+			content: 'Tailwind 和 Styled Components 怎么选？',
+		},
+		{
+			key: 'ai-1002',
+			role: 'ai',
+			content:
+				'如果你要更高开发速度与一致规范，优先 Tailwind；若强调组件封装隔离可选 Styled Components。',
+		},
+	],
+	'conv-3': [
+		{ key: 'user-1003', role: 'user', content: 'RSC 适合什么场景？' },
+		{
+			key: 'ai-1003',
+			role: 'ai',
+			content:
+				'适合数据读取密集且对首屏速度敏感的页面，能有效减少客户端 JS 负担。',
+		},
+	],
+	'conv-4': [
+		{ key: 'user-1004', role: 'user', content: '如何优化大模型推理延迟？' },
+		{
+			key: 'ai-1004',
+			role: 'ai',
+			content:
+				'可以从 prompt 压缩、并行检索、流式输出与缓存命中率四个方向同时优化。',
+		},
+	],
+};
+
 export default function ChatContent() {
 	const [value, setValue] = useState('');
 	const [thinking, setThinking] = useState(false);
@@ -55,6 +109,7 @@ export default function ChatContent() {
 	const streamFinalizeTimeoutIdRef = useRef<number | null>(null);
 	const messageIdRef = useRef(0);
 	const activeStreamTokenRef = useRef(0);
+	const hasUserMessageRef = useRef(false);
 
 	const scrollToLatest = useCallback((behavior: ScrollBehavior = 'auto') => {
 		const container = conversationRef.current;
@@ -99,6 +154,67 @@ export default function ChatContent() {
 	useEffect(() => {
 		return () => {
 			clearAllTimers();
+		};
+	}, [clearAllTimers]);
+
+	useEffect(() => {
+		hasUserMessageRef.current = messages.some((m) => m.role === 'user');
+	}, [messages]);
+
+	useEffect(() => {
+		const handleNewConversation = (event: Event) => {
+			const customEvent = event as CustomEvent<SidebarNewConversationDetail>;
+			if (!customEvent.detail?.key) return;
+
+			clearAllTimers();
+			setValue('');
+			setThinking(false);
+			setGenerating(false);
+			setCurrentAiKey(null);
+			setMessages([]);
+			setSourcesMap({});
+		};
+
+		window.addEventListener(
+			SIDEBAR_NEW_CONVERSATION_EVENT,
+			handleNewConversation,
+		);
+		return () => {
+			window.removeEventListener(
+				SIDEBAR_NEW_CONVERSATION_EVENT,
+				handleNewConversation,
+			);
+		};
+	}, [clearAllTimers]);
+
+	useEffect(() => {
+		const handleActiveConversation = (event: Event) => {
+			const customEvent = event as CustomEvent<SidebarActiveConversationDetail>;
+			const conversationKey = customEvent.detail?.key;
+			if (!conversationKey) return;
+
+			const mockMessages = MOCK_CONVERSATION_MESSAGES[conversationKey];
+			if (!mockMessages) return;
+
+			clearAllTimers();
+			setValue('');
+			setThinking(false);
+			setGenerating(false);
+			setCurrentAiKey(null);
+			setSourcesMap({});
+			setMessages(mockMessages);
+			pendingScrollRef.current = true;
+		};
+
+		window.addEventListener(
+			SIDEBAR_ACTIVE_CONVERSATION_EVENT,
+			handleActiveConversation,
+		);
+		return () => {
+			window.removeEventListener(
+				SIDEBAR_ACTIVE_CONVERSATION_EVENT,
+				handleActiveConversation,
+			);
 		};
 	}, [clearAllTimers]);
 
@@ -201,6 +317,15 @@ export default function ChatContent() {
 			const text = raw.trim();
 			if (!text) return;
 			if (generating) return;
+
+			if (!hasUserMessageRef.current) {
+				window.dispatchEvent(
+					new CustomEvent(CHAT_FIRST_USER_MESSAGE_EVENT, {
+						detail: { text },
+					}),
+				);
+			}
+
 			pendingScrollRef.current = true;
 
 			clearAllTimers();

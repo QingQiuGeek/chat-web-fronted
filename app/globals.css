@@ -19,6 +19,9 @@
 	--app-prompt-desc: rgba(23, 23, 23, 0.65);
 	--app-send-btn-bg: #171717;
 	--app-send-btn-fg: #ffffff;
+	--app-sidebar-action-bg: transparent;
+	--app-sidebar-action-hover-bg: rgba(23, 23, 23, 0.08);
+	--app-sidebar-action-fg: var(--app-text);
 }
 
 /* 黑夜模式下颜色 */
@@ -42,6 +45,9 @@
 	--app-prompt-desc: rgba(255, 255, 255, 0.7);
 	--app-send-btn-bg: #d4d4d4;
 	--app-send-btn-fg: #111111;
+	--app-sidebar-action-bg: var(--app-sidebar);
+	--app-sidebar-action-hover-bg: rgba(255, 255, 255, 0.14);
+	--app-sidebar-action-fg: #ffffff;
 }
 
 body {
@@ -257,6 +263,173 @@ textarea:focus {
 
 .theme-icon-sun {
 	display: inline;
+}
+
+.sidebar-search.ant-input-affix-wrapper,
+.sidebar-search.ant-input-outlined,
+.sidebar-search.ant-input-affix-wrapper .ant-input {
+	background: color-mix(
+		in srgb,
+		var(--app-panel) 78%,
+		var(--app-bg)
+	) !important;
+	color: var(--app-text) !important;
+	border-color: var(--app-border) !important;
+}
+
+.sidebar-search.ant-input-affix-wrapper:hover,
+.sidebar-search.ant-input-affix-wrapper-focused {
+	background: color-mix(
+		in srgb,
+		var(--app-panel) 88%,
+		var(--app-hover)
+	) !important;
+	border-color: color-mix(in srgb, var(--app-text) 22%, transparent) !important;
+}
+
+.sidebar-search.ant-input-affix-wrapper .ant-input::placeholder {
+	color: var(--app-muted) !important;
+}
+
+.dark .sidebar-search.ant-input-affix-wrapper,
+.dark .sidebar-search.ant-input-outlined,
+.dark .sidebar-search.ant-input-affix-wrapper:hover,
+.dark .sidebar-search.ant-input-affix-wrapper-focused,
+.dark .sidebar-search.ant-input-affix-wrapper .ant-input {
+	background: var(--app-sidebar) !important;
+}
+
+.sidebar-conversations .ant-conversations-item {
+	width: 100%;
+	border-radius: 10px;
+	margin-bottom: 0;
+	padding-top: 0;
+	padding-bottom: 0;
+	transition: background-color 0.2s ease;
+}
+
+.sidebar-conversations .ant-conversations-item-content {
+	width: 100%;
+}
+
+.sidebar-conversations .ant-conversations-list {
+	gap: 0 !important;
+}
+
+.sidebar-conversations .ant-conversations-item:hover {
+	background: var(--app-hover) !important;
+}
+
+.sidebar-conversations .ant-conversations-item-active,
+.sidebar-conversations .ant-conversations-item-active:hover {
+	background: color-mix(in srgb, var(--app-text) 16%, transparent) !important;
+}
+
+.sidebar-conversations .ant-conversations-menu {
+	opacity: 0;
+	transition: opacity 0.2s ease;
+}
+
+.sidebar-conversations .ant-conversations-menu .ant-btn {
+	color: var(--app-text) !important;
+}
+
+.dark .sidebar-conversations .ant-conversations-menu .ant-btn .anticon,
+.dark .sidebar-conversations .ant-conversations-menu .ant-btn .anticon svg {
+	color: var(--app-text) !important;
+	fill: currentColor !important;
+}
+
+.dark
+	.sidebar-conversations
+	.ant-conversations-menu
+	.ant-btn
+	.anticon
+	svg
+	path {
+	fill: currentColor !important;
+}
+
+.sidebar-conversations .ant-conversations-menu .ant-btn:hover,
+.sidebar-conversations .ant-conversations-menu .ant-btn:focus-visible {
+	color: var(--app-text) !important;
+	background: var(--app-hover) !important;
+}
+
+.sidebar-action-btn.ant-btn {
+	background: var(--app-sidebar-action-bg) !important;
+	color: var(--app-sidebar-action-fg) !important;
+	border-radius: 8px !important;
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	transition:
+		opacity 0.2s ease,
+		background-color 0.2s ease,
+		color 0.2s ease;
+}
+
+.sidebar-action-btn.ant-btn:hover,
+.sidebar-action-btn.ant-btn:focus-visible {
+	background: var(--app-sidebar-action-hover-bg) !important;
+	color: var(--app-sidebar-action-fg) !important;
+}
+
+.sidebar-conversations
+	.ant-conversations-item:hover
+	.sidebar-action-btn.ant-btn,
+.sidebar-conversations
+	.ant-conversations-item-active
+	.sidebar-action-btn.ant-btn,
+.sidebar-conversations
+	.ant-conversations-item:focus-within
+	.sidebar-action-btn.ant-btn {
+	opacity: 1;
+	visibility: visible;
+	pointer-events: auto;
+}
+
+.dark
+	.sidebar-conversations
+	.ant-conversations-item
+	.sidebar-action-btn.ant-btn {
+	background: var(--app-sidebar-action-bg) !important;
+	color: var(--app-sidebar-action-fg) !important;
+}
+
+.dark
+	.sidebar-conversations
+	.ant-conversations-item
+	.sidebar-action-btn.ant-btn:hover,
+.dark
+	.sidebar-conversations
+	.ant-conversations-item
+	.sidebar-action-btn.ant-btn:focus-visible {
+	background: var(--app-sidebar-action-hover-bg) !important;
+	color: var(--app-sidebar-action-fg) !important;
+}
+
+.dark .sidebar-conversations .ant-conversations-menu {
+	background: #ffffff !important;
+	border-radius: 10px;
+}
+
+.dark .sidebar-conversations .ant-conversations-menu .ant-btn,
+.dark .sidebar-conversations .ant-conversations-menu .ant-btn .anticon,
+.dark .sidebar-conversations .ant-conversations-menu .ant-btn .anticon svg {
+	color: #171717 !important;
+	fill: currentColor !important;
+}
+
+.dark .sidebar-conversations .ant-conversations-menu .ant-btn:hover,
+.dark .sidebar-conversations .ant-conversations-menu .ant-btn:focus-visible {
+	color: #171717 !important;
+	background: rgba(23, 23, 23, 0.08) !important;
+}
+
+.sidebar-conversations .ant-conversations-item:hover .ant-conversations-menu,
+.sidebar-conversations .ant-conversations-item-active .ant-conversations-menu {
+	opacity: 1;
 }
 
 .dark .theme-icon-moon {
