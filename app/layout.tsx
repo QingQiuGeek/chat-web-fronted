@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { cookies } from 'next/headers';
+import { AntdRegistry } from '@ant-design/nextjs-registry';
 import './globals.css';
 
 const inter = Inter({
@@ -43,7 +44,9 @@ export default async function RootLayout({
 			className={htmlClassName}
 			suppressHydrationWarning
 		>
-			<body className='h-full w-full m-0 p-0 overflow-hidden'>{children}</body>
+			<body className='h-full w-full m-0 p-0 overflow-hidden'>
+				<AntdRegistry>{children}</AntdRegistry>
+			</body>
 		</html>
 	);
 }
