@@ -12,6 +12,12 @@
 	--app-soft: rgba(23, 23, 23, 0.45);
 	--app-border: rgba(23, 23, 23, 0.18);
 	--app-hover: rgba(23, 23, 23, 0.08);
+	--app-input-text: #171717;
+	--app-input-placeholder: #5c5c5c;
+	--app-prompt-title: rgba(23, 23, 23, 0.55);
+	--app-prompt-desc: rgba(23, 23, 23, 0.65);
+	--app-send-btn-bg: #171717;
+	--app-send-btn-fg: #ffffff;
 }
 
 /* 黑夜模式下颜色 */
@@ -21,14 +27,20 @@
 	/* 文字白色 */
 	--app-text: #fff;
 	/* 卡片、对话框或主内容区的颜色 */
-	--app-panel: #303030;
-	--app-sidebar: #181818;
+	--app-panel: #181818;
+	--app-sidebar: #303030;
 	/* 次要文字（如时间戳、副标题） */
 	--app-muted: #afafaf;
 	/* 提示性文字或占位符 */
 	--app-soft: #afafaf;
 	--app-border: rgba(255, 255, 255, 0.15);
 	--app-hover: rgba(255, 255, 255, 0.1);
+	--app-input-text: #ffffff;
+	--app-input-placeholder: #8f8f8f;
+	--app-prompt-title: rgba(255, 255, 255, 0.55);
+	--app-prompt-desc: rgba(255, 255, 255, 0.70);
+	--app-send-btn-bg: #d4d4d4;
+	--app-send-btn-fg: #111111;
 }
 
 body {
@@ -80,6 +92,80 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
 	background: rgba(255, 255, 255, 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+	background: rgba(232, 232, 232, 0.42);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+	background: rgba(245, 245, 245, 0.62);
+}
+
+/* 对话区滚动条可见性（Bubble.List scroll 容器） */
+.ant-bubble-list-scroll,
+.ant-bubble-list-scrollbar,
+.ant-bubble-list-scroll-container {
+	max-height: none !important;
+	height: auto !important;
+	overflow: hidden !important;
+}
+
+.conversation-scroll-area {
+	scrollbar-width: thin;
+	scrollbar-color: rgba(128, 128, 128, 0.68) transparent;
+}
+
+.conversation-scroll-area::-webkit-scrollbar {
+	width: 10px;
+}
+
+.conversation-scroll-area::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.conversation-scroll-area::-webkit-scrollbar-thumb {
+	background: rgba(126, 126, 126, 0.68);
+	border-radius: 999px;
+}
+
+.conversation-scroll-area::-webkit-scrollbar-thumb:hover {
+	background: rgba(142, 142, 142, 0.8);
+}
+
+.dark .conversation-scroll-area {
+	scrollbar-color: rgba(248, 248, 248, 0.96) rgba(255, 255, 255, 0.12);
+}
+
+.dark .conversation-scroll-area::-webkit-scrollbar-thumb {
+	background: rgba(248, 248, 248, 0.96);
+}
+
+.dark .conversation-scroll-area::-webkit-scrollbar-thumb:hover {
+	background: rgba(255, 255, 255, 1);
+}
+
+.dark .conversation-scroll-area::-webkit-scrollbar-track {
+	background: rgba(255, 255, 255, 0.12);
+}
+
+.ant-bubble-list-scroll::-webkit-scrollbar,
+.ant-bubble-list-scrollbar::-webkit-scrollbar,
+.ant-bubble-list-scroll-container::-webkit-scrollbar {
+	width: 10px;
+}
+
+.ant-bubble-list-scroll::-webkit-scrollbar-thumb,
+.ant-bubble-list-scrollbar::-webkit-scrollbar-thumb,
+.ant-bubble-list-scroll-container::-webkit-scrollbar-thumb {
+	background: rgba(120, 120, 120, 0.55);
+	border-radius: 999px;
+}
+
+.dark .ant-bubble-list-scroll::-webkit-scrollbar-thumb,
+.dark .ant-bubble-list-scrollbar::-webkit-scrollbar-thumb,
+.dark .ant-bubble-list-scroll-container::-webkit-scrollbar-thumb {
+	background: rgba(245, 245, 245, 0.92);
 }
 
 textarea:focus {
@@ -197,7 +283,8 @@ textarea:focus {
 .ant-sender textarea,
 .ant-sender .ant-input,
 .ant-sender .ant-input-textarea textarea {
-	color: #000000 !important;
+	color: var(--app-input-text) !important;
+	-webkit-text-fill-color: var(--app-input-text) !important;
 	font-size: 15px !important;
 	line-height: 1.35 !important;
 	font-weight: 500 !important;
@@ -207,8 +294,120 @@ textarea:focus {
 .ant-sender textarea::placeholder,
 .ant-sender .ant-input::placeholder,
 .ant-sender .ant-input-textarea textarea::placeholder {
-	color: rgba(0, 0, 0, 0.45) !important;
+	color: var(--app-input-placeholder) !important;
 	font-size: 15px !important;
+	opacity: 1 !important;
+}
+
+.ant-sender .ant-sender-slot-content:empty::after,
+.ant-sender .ant-sender-skill.ant-sender-skill-empty::after,
+.ant-sender .ant-sender-slot-select.placeholder,
+.ant-sender .ant-sender-slot-select .placeholder {
+	color: var(--app-input-placeholder) !important;
+}
+
+/* Prompts 文字跟随全局主题变量 */
+.ant-prompts .ant-prompts-title {
+	color: var(--app-prompt-title) !important;
+}
+
+.ant-prompts .ant-prompts-item {
+	background: var(--app-panel) !important;
+	border-color: var(--app-border) !important;
+}
+
+.ant-prompts .ant-prompts-item:hover {
+	background: color-mix(
+		in srgb,
+		var(--app-panel) 88%,
+		var(--app-hover)
+	) !important;
+}
+
+.ant-prompts .ant-prompts-item:active {
+	background: color-mix(
+		in srgb,
+		var(--app-panel) 80%,
+		var(--app-hover)
+	) !important;
+}
+
+.ant-prompts .ant-prompts-item .ant-prompts-label,
+.ant-prompts .ant-prompts-item .ant-prompts-desc {
+	color: var(--app-prompt-desc) !important;
+}
+
+.ant-prompts .ant-prompts-item .ant-prompts-label,
+.ant-prompts .ant-prompts-title {
+	font-weight: 500 !important;
+}
+
+/* 暗色模式强覆盖，避免被运行时 token 回退到浅色 */
+.dark .ant-prompts .ant-prompts-title,
+.dark .ant-prompts .ant-prompts-title * {
+	color: var(--app-prompt-title) !important;
+}
+
+.dark .ant-prompts .ant-prompts-item .ant-prompts-label,
+.dark .ant-prompts .ant-prompts-item .ant-prompts-desc,
+.dark .ant-prompts .ant-prompts-item .ant-prompts-label *,
+.dark .ant-prompts .ant-prompts-item .ant-prompts-desc * {
+	color: var(--app-prompt-desc) !important;
+}
+
+.dark .ant-sender .ant-sender-input-slot,
+.dark .ant-sender .ant-sender-input-slot *,
+.dark .ant-sender textarea,
+.dark .ant-sender .ant-input,
+.dark .ant-sender .ant-input-textarea textarea {
+	color: var(--app-input-text) !important;
+	-webkit-text-fill-color: var(--app-input-text) !important;
+}
+
+.dark .ant-sender .ant-sender-input-slot:empty::before,
+.dark .ant-sender .ant-sender-input-slot::before,
+.dark .ant-sender [contenteditable='true']:empty::before,
+.dark .ant-sender .ant-sender-input-slot[data-placeholder]::before,
+.dark .ant-sender textarea::placeholder,
+.dark .ant-sender .ant-input::placeholder,
+.dark .ant-sender .ant-input-textarea textarea::placeholder {
+	color: var(--app-input-placeholder) !important;
+	opacity: 1 !important;
+}
+
+.dark .chat-sender.ant-sender [placeholder] {
+	color: var(--app-input-placeholder) !important;
+	-webkit-text-fill-color: var(--app-input-placeholder) !important;
+}
+
+.dark .ant-sender .ant-sender-slot-content:empty::after,
+.dark .ant-sender .ant-sender-slot-content[data-placeholder]::after,
+.dark .ant-sender .ant-sender-skill.ant-sender-skill-empty::after,
+.dark .ant-sender .ant-sender-slot-select.placeholder,
+.dark .ant-sender .ant-sender-slot-select .placeholder {
+	color: var(--app-input-placeholder) !important;
+}
+
+/* ChatSender 占位符强覆盖：命中 Sender 的 contenteditable 与 slot 占位结构 */
+.chat-sender.ant-sender .ant-sender-input-slot:empty::before,
+.chat-sender.ant-sender .ant-sender-input-slot::before,
+.chat-sender.ant-sender [contenteditable='true']:empty::before,
+.chat-sender.ant-sender .ant-sender-skill.ant-sender-skill-empty::after,
+.chat-sender.ant-sender .ant-sender-slot-content:empty::after,
+.chat-sender.ant-sender .ant-sender-slot-select.placeholder,
+.chat-sender.ant-sender
+	.ant-sender-slot-select
+	.ant-sender-slot-select-value:empty::before,
+.chat-sender.ant-sender textarea::placeholder,
+.chat-sender.ant-sender .ant-input::placeholder,
+.chat-sender.ant-sender .ant-input-textarea textarea::placeholder {
+	color: var(--app-input-placeholder) !important;
+	opacity: 1 !important;
+}
+
+.chat-sender.ant-sender [placeholder] {
+	color: var(--app-input-placeholder) !important;
+	-webkit-text-fill-color: var(--app-input-placeholder) !important;
 }
 
 .ant-sender .ant-btn,
@@ -228,9 +427,37 @@ textarea:focus {
 }
 
 .ant-sender .ant-btn-primary {
-	background: #1677ff !important;
-	border-color: #1677ff !important;
-	color: #fff !important;
+	background: var(--app-send-btn-bg) !important;
+	border-color: var(--app-send-btn-bg) !important;
+	color: var(--app-send-btn-fg) !important;
+}
+
+.ant-sender .ant-btn-primary.ant-btn-icon-only,
+.ant-sender .ant-btn-primary .anticon,
+.ant-sender .ant-btn-primary svg {
+	color: var(--app-send-btn-fg) !important;
+	fill: currentColor !important;
+}
+
+.ant-sender .ant-btn-default.ant-btn-icon-only,
+.ant-sender .ant-btn-default .anticon,
+.ant-sender .ant-btn-default svg {
+	color: #171717 !important;
+	fill: currentColor !important;
+}
+
+.dark .ant-sender .ant-btn-default.ant-btn-icon-only,
+.dark .ant-sender .ant-btn-default .anticon,
+.dark .ant-sender .ant-btn-default svg {
+	color: #ffffff !important;
+	fill: currentColor !important;
+}
+
+.dark .ant-sender .ant-btn-primary.ant-btn-icon-only,
+.dark .ant-sender .ant-btn-primary .anticon,
+.dark .ant-sender .ant-btn-primary svg {
+	color: var(--app-send-btn-fg) !important;
+	fill: currentColor !important;
 }
 
 /* Sender.Switch 边框与选中效果 */
@@ -261,4 +488,117 @@ textarea:focus {
 	.ant-sender-switch.ant-sender-switch-checked
 	.ant-sender-switch-content {
 	background: color-mix(in srgb, #1677ff 14%, transparent) !important;
+}
+
+/* Bubble 对话在暗色下保持可读 */
+.dark .ant-bubble .ant-bubble-content,
+.dark .ant-bubble .ant-bubble-content * {
+	color: #ffffff !important;
+	-webkit-text-fill-color: #ffffff !important;
+}
+
+.dark .ant-bubble .ant-bubble-content-outlined {
+	background: color-mix(in srgb, var(--app-panel) 92%, #000000) !important;
+	border-color: var(--app-border) !important;
+}
+
+.dark .ant-bubble.ant-bubble-end .ant-bubble-content,
+.dark .ant-bubble.ant-bubble-end .ant-bubble-content-filled {
+	background: #2f2f2f !important;
+	border-color: var(--app-border) !important;
+	color: #ffffff !important;
+	-webkit-text-fill-color: #ffffff !important;
+}
+
+.dark .ant-bubble.ant-bubble-end .ant-bubble-content * {
+	color: #ffffff !important;
+	-webkit-text-fill-color: #ffffff !important;
+}
+
+/* Think / ThoughtChain / Sources 暗色可读性 */
+.dark .ant-think,
+.dark .ant-think * {
+	color: #ffffff !important;
+}
+
+.dark .ant-think .ant-think-content {
+	color: var(--app-muted) !important;
+	border-inline-start-color: var(--app-border) !important;
+}
+
+.dark .ant-thought-chain,
+.dark .ant-thought-chain * {
+	color: #ffffff !important;
+}
+
+.dark .ant-thought-chain .ant-thought-chain-node-description {
+	color: var(--app-muted) !important;
+}
+
+.dark .ant-thought-chain .ant-thought-chain-node-icon::after,
+.dark .ant-thought-chain .ant-thought-chain-node-icon-dashed::after {
+	border-inline-start-color: var(--app-border) !important;
+}
+
+.dark .ant-sources,
+.dark .ant-sources * {
+	color: #ffffff !important;
+}
+
+.dark .ant-sources .ant-sources-title-wrapper {
+	color: var(--app-muted) !important;
+}
+
+.dark .ant-sources .ant-sources-link:hover {
+	color: #8ab4ff !important;
+}
+
+/* Actions（复制 / 喜欢 / 不喜欢 / 重试 / 分享）暗色可读性 */
+.dark .ant-actions,
+.dark .ant-actions * {
+	color: #ffffff !important;
+}
+
+.dark .ant-actions .ant-actions-item,
+.dark .ant-actions.ant-actions-item,
+.dark .ant-actions .ant-actions-copy-copy,
+.dark .ant-actions .ant-actions-feedback,
+.dark .ant-actions .ant-actions-feedback-like,
+.dark .ant-actions .ant-actions-feedback-dislike {
+	color: #ffffff !important;
+}
+
+.dark .ant-actions .ant-actions-item:hover,
+.dark .ant-actions.ant-actions-item:hover {
+	background: color-mix(in srgb, #ffffff 12%, transparent) !important;
+}
+
+.dark .ant-actions .ant-actions-feedback-like-active,
+.dark .ant-actions .ant-actions-feedback-like.ant-actions-feedback-active {
+	color: #ff6b6b !important;
+	background: color-mix(in srgb, #ff6b6b 18%, transparent) !important;
+	border-radius: 8px !important;
+}
+
+.dark .ant-actions .ant-actions-feedback-dislike-active,
+.dark .ant-actions .ant-actions-feedback-dislike.ant-actions-feedback-active {
+	color: #ffb35c !important;
+	background: color-mix(in srgb, #ffb35c 20%, transparent) !important;
+	border-radius: 8px !important;
+}
+
+.dark .ant-actions .ant-actions-feedback-like,
+.dark .ant-actions .ant-actions-feedback-dislike {
+	color: rgba(255, 255, 255, 0.86) !important;
+}
+
+.dark .ant-actions .ant-actions-feedback-like .anticon,
+.dark .ant-actions .ant-actions-feedback-like svg,
+.dark .ant-actions .ant-actions-feedback-dislike .anticon,
+.dark .ant-actions .ant-actions-feedback-dislike svg,
+.dark .ant-actions .ant-actions-feedback-like svg path,
+.dark .ant-actions .ant-actions-feedback-dislike svg path {
+	color: currentColor !important;
+	fill: currentColor !important;
+	stroke: currentColor !important;
 }

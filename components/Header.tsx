@@ -21,7 +21,7 @@ export default function Header() {
 	};
 
 	return (
-		<header className='flex items-center justify-between px-4 h-14 sticky top-0 z-10 [background:var(--app-bg)]'>
+		<header className='flex items-center justify-between px-4 h-14 sticky top-0 z-10 [background:var(--app-panel)]'>
 			{/* model list */}
 			<div className='flex items-center'>
 				<button className='flex items-center gap-1.5 hover:bg-[var(--app-hover)] px-3 py-2 rounded-xl transition-colors text-[18px] font-semibold [color:var(--app-text)]'>
@@ -45,7 +45,7 @@ export default function Header() {
 				{/* Theme Toggle */}
 				<button
 					onClick={toggleTheme}
-					className='cursor-pointer w-9 h-9 rounded-full hover:bg-[var(--app-hover)] [color:var(--app-muted)] transition-colors'
+					className='cursor-pointer w-9 h-9 rounded-full border-none outline-none ring-0 hover:bg-[var(--app-hover)] [color:var(--app-muted)] transition-colors'
 				>
 					<span className='theme-icon-moon'>🌙</span>
 					<span className='theme-icon-sun'>☀️</span>

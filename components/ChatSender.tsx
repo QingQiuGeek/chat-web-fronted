@@ -62,7 +62,6 @@ export default function ChatSender({
 	loading = false,
 }: ChatSenderProps) {
 	const { token } = theme.useToken();
-	const [mounted, setMounted] = useState(false);
 
 	const [deepThinking, setDeepThinking] = useState(false);
 	const [webSearch, setWebSearch] = useState(false);
@@ -111,16 +110,6 @@ export default function ChatSender({
 	useEffect(() => {
 		valueRef.current = value;
 	}, [value]);
-
-	useEffect(() => {
-		const rafId = window.requestAnimationFrame(() => {
-			setMounted(true);
-		});
-
-		return () => {
-			window.cancelAnimationFrame(rafId);
-		};
-	}, []);
 
 	useEffect(() => {
 		if (typeof window === 'undefined') return;
@@ -174,15 +163,6 @@ export default function ChatSender({
 			revokeAllObjectUrls();
 		};
 	}, []);
-
-	if (!mounted) {
-		return (
-			<div
-				className='w-full rounded-2xl'
-				style={{ minHeight: 56 }}
-			/>
-		);
-	}
 
 	const normalizeAttachmentItems = (
 		fileList: GetProp<AttachmentsProps, 'items'> = [],
@@ -241,6 +221,19 @@ export default function ChatSender({
 		}
 	};
 
+	const handleSubmit = (nextValue: string) => {
+		if (loading) return;
+		const text = (nextValue ?? valueRef.current ?? '').trim();
+		if (!text) return;
+
+		recognitionRef.current?.stop?.();
+		setIsRecording(false);
+		onSubmitAction(text);
+		revokeAllObjectUrls();
+		setAttachments([]);
+		setOpen(false);
+	};
+
 	const senderHeader = (
 		<Sender.Header
 			title='Attachments'
@@ -282,16 +275,34 @@ export default function ChatSender({
 
 	return (
 		<Sender
+			className='chat-sender'
 			ref={senderRef}
 			header={senderHeader}
 			value={value}
-			onChange={onChangeAction}
+			disabled={loading}
+			loading={loading}
+			onChange={(nextValue) => {
+				valueRef.current = nextValue;
+				onChangeAction(nextValue);
+			}}
+			suffix={false}
 			autoSize={{ minRows: 1, maxRows: 6 }}
 			placeholder='请输入内容，回车发送'
-			loading={loading}
 			submitType='enter'
-			footer={(_, { components }) => {
-				const { SendButton, LoadingButton } = components;
+			onPasteFile={(files) => {
+				for (const file of files) {
+					attachmentsRef.current?.upload(file);
+				}
+				setOpen(true);
+			}}
+			onSubmit={handleSubmit}
+			onCancel={() => {
+				recognitionRef.current?.stop?.();
+				setIsRecording(false);
+				onCancelAction?.();
+				setOpen(false);
+			}}
+			footer={(actionsNode) => {
 				return (
 					<Flex
 						justify='space-between'
@@ -304,13 +315,6 @@ export default function ChatSender({
 							align='center'
 							wrap
 						>
-							<Button
-								style={iconStyle}
-								type='text'
-								icon={<PaperClipOutlined />}
-								onClick={() => setOpen((prev) => !prev)}
-							/>
-							<Divider orientation='vertical' />
 							<Sender.Switch
 								icon={<OpenAIOutlined />}
 								value={deepThinking}
@@ -346,6 +350,14 @@ export default function ChatSender({
 								Skill & MCP
 							</Sender.Switch>
 							<Divider orientation='vertical' />
+
+							<Button
+								style={iconStyle}
+								type='text'
+								icon={<PaperClipOutlined />}
+								onClick={() => setOpen((prev) => !prev)}
+							/>
+							<Divider orientation='vertical' />
 							<Button
 								type='text'
 								style={{
@@ -356,39 +368,11 @@ export default function ChatSender({
 								onClick={handleVoiceClick}
 							/>
 							<Divider orientation='vertical' />
-							{loading ? (
-								<LoadingButton type='default' />
-							) : (
-								<SendButton
-									type='primary'
-									disabled={!value.trim()}
-								/>
-							)}
+							{actionsNode}
 						</Flex>
 					</Flex>
 				);
 			}}
-			onPasteFile={(files) => {
-				for (const file of files) {
-					attachmentsRef.current?.upload(file);
-				}
-				setOpen(true);
-			}}
-			onSubmit={(nextValue) => {
-				recognitionRef.current?.stop?.();
-				setIsRecording(false);
-				onSubmitAction(nextValue);
-				revokeAllObjectUrls();
-				setAttachments([]);
-				setOpen(false);
-			}}
-			onCancel={() => {
-				recognitionRef.current?.stop?.();
-				setIsRecording(false);
-				onCancelAction?.();
-				setOpen(false);
-			}}
-			suffix={false}
 		/>
 	);
 }

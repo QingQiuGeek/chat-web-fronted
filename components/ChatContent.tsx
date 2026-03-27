@@ -5,7 +5,8 @@ import {
 	RedoOutlined,
 	ShareAltOutlined,
 } from '@ant-design/icons';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Actions, Bubble, Sources, Think, ThoughtChain } from '@ant-design/x';
 import type {
 	ActionsFeedbackProps,
@@ -17,7 +18,16 @@ import type {
 import { Avatar } from 'antd';
 import aiAvatar from '../app/ai.jpg';
 import Prompt from './Prompt';
-import ChatSender from './ChatSender';
+
+const ChatSender = dynamic(() => import('./ChatSender'), {
+	ssr: false,
+	loading: () => (
+		<div
+			className='w-full rounded-2xl'
+			style={{ minHeight: 56 }}
+		/>
+	),
+});
 
 type ChatMessage = {
 	key: string;
@@ -39,26 +49,59 @@ export default function ChatContent() {
 		Record<string, SourcesProps['items']>
 	>({});
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
-	const timeoutIdsRef = useRef<number[]>([]);
-	const streamTimeoutIdRef = useRef<number | null>(null);
+	const conversationRef = useRef<HTMLDivElement | null>(null);
+	const pendingScrollRef = useRef(false);
+	const thinkTimeoutIdRef = useRef<number | null>(null);
+	const streamStepTimeoutIdRef = useRef<number | null>(null);
+	const streamFinalizeTimeoutIdRef = useRef<number | null>(null);
 	const messageIdRef = useRef(0);
 	const activeStreamTokenRef = useRef(0);
 
-	const clearAllTimers = () => {
-		activeStreamTokenRef.current += 1;
-		timeoutIdsRef.current.forEach((id) => window.clearTimeout(id));
-		timeoutIdsRef.current = [];
-		if (streamTimeoutIdRef.current !== null) {
-			window.clearTimeout(streamTimeoutIdRef.current);
-			streamTimeoutIdRef.current = null;
+	const scrollToLatest = useCallback((behavior: ScrollBehavior = 'auto') => {
+		const container = conversationRef.current;
+		if (!container) return;
+		container.scrollTo({
+			top: container.scrollHeight,
+			behavior,
+		});
+	}, []);
+
+	const scheduleScrollToLatest = useCallback(
+		(behavior: ScrollBehavior = 'auto') => {
+			window.requestAnimationFrame(() => {
+				window.requestAnimationFrame(() => {
+					scrollToLatest(behavior);
+				});
+			});
+		},
+		[scrollToLatest],
+	);
+
+	const clearStreamTimers = useCallback(() => {
+		if (thinkTimeoutIdRef.current !== null) {
+			window.clearTimeout(thinkTimeoutIdRef.current);
+			thinkTimeoutIdRef.current = null;
 		}
-	};
+		if (streamStepTimeoutIdRef.current !== null) {
+			window.clearTimeout(streamStepTimeoutIdRef.current);
+			streamStepTimeoutIdRef.current = null;
+		}
+		if (streamFinalizeTimeoutIdRef.current !== null) {
+			window.clearTimeout(streamFinalizeTimeoutIdRef.current);
+			streamFinalizeTimeoutIdRef.current = null;
+		}
+	}, []);
+
+	const clearAllTimers = useCallback(() => {
+		activeStreamTokenRef.current += 1;
+		clearStreamTimers();
+	}, [clearStreamTimers]);
 
 	useEffect(() => {
 		return () => {
 			clearAllTimers();
 		};
-	}, []);
+	}, [clearAllTimers]);
 
 	const thoughtChainItems = useMemo<ThoughtChainItemType[]>(
 		() => [
@@ -128,6 +171,7 @@ export default function ChatContent() {
 		const text = raw.trim();
 		if (!text) return;
 		if (generating) return;
+		pendingScrollRef.current = true;
 
 		clearAllTimers();
 
@@ -136,6 +180,27 @@ export default function ChatContent() {
 		const userKey = `user-${timeId}`;
 		const aiKey = `ai-${timeId}`;
 		const fullReply = `关于"${text}"，我建议先从需求拆分、组件职责边界、数据流和交互状态管理四个层面设计。需要的话我可以继续给你产出可直接落地的代码版本。`;
+		let streamFinished = false;
+
+		const finishStream = (content: string) => {
+			if (activeStreamTokenRef.current !== streamToken) return;
+			if (streamFinished) return;
+			streamFinished = true;
+			setThinking(false);
+			setGenerating(false);
+			setMessages((prev) =>
+				prev.map((item) =>
+					item.key === aiKey
+						? {
+								...item,
+								content,
+								streaming: false,
+							}
+						: item,
+				),
+			);
+			clearStreamTimers();
+		};
 
 		setValue('');
 		setThinking(true);
@@ -151,18 +216,26 @@ export default function ChatContent() {
 			{ key: userKey, role: 'user', content: text },
 			{ key: aiKey, role: 'ai', content: '', streaming: true },
 		]);
+		scheduleScrollToLatest('auto');
 
-		const thinkTimeout = window.setTimeout(() => {
+		streamFinalizeTimeoutIdRef.current = window.setTimeout(() => {
+			finishStream(fullReply);
+		}, 15000);
+
+		const thinkTimeoutId = window.setTimeout(() => {
 			if (activeStreamTokenRef.current !== streamToken) return;
+			if (streamFinished) return;
+			thinkTimeoutIdRef.current = null;
 			setThinking(false);
 
 			let index = 0;
-			const chunkSize = 2;
+			const chunkSize = Math.max(1, Math.ceil(fullReply.length / 36));
 
 			const pushChunk = () => {
 				if (activeStreamTokenRef.current !== streamToken) return;
+				if (streamFinished) return;
 
-				index += chunkSize;
+				index = Math.min(fullReply.length, index + chunkSize);
 				const nextContent = fullReply.slice(0, index);
 				const isDone = index >= fullReply.length;
 
@@ -177,32 +250,39 @@ export default function ChatContent() {
 							: item,
 					),
 				);
+				scheduleScrollToLatest('auto');
 
 				if (isDone) {
-					streamTimeoutIdRef.current = null;
-					setGenerating(false);
+					finishStream(fullReply);
 					return;
 				}
 
-				streamTimeoutIdRef.current = window.setTimeout(pushChunk, 36);
+				streamStepTimeoutIdRef.current = window.setTimeout(pushChunk, 34);
 			};
 
 			pushChunk();
-		}, 1400);
-		timeoutIdsRef.current.push(thinkTimeout);
+		}, 650);
+		thinkTimeoutIdRef.current = thinkTimeoutId;
 	};
 
 	// 判断是否有用户消息（即是否开始对话）
 	const hasUserMessage = messages.some((m) => m.role === 'user');
 
-	// 找最后一个用户消息的索引
-	const lastUserMsgIdx = messages.findLastIndex((m) => m.role === 'user');
-	// 之前的消息（最后一个用户消息之前的所有消息）
-	const previousMessages =
-		lastUserMsgIdx > 0 ? messages.slice(0, lastUserMsgIdx) : [];
-	// 最新一轮的消息（最后一个用户消息及之后的）
-	const latestRoundMessages =
-		lastUserMsgIdx >= 0 ? messages.slice(lastUserMsgIdx) : [];
+	useEffect(() => {
+		if (!hasUserMessage) return;
+		if (pendingScrollRef.current) {
+			pendingScrollRef.current = false;
+			scheduleScrollToLatest('smooth');
+			return;
+		}
+		const rafId = window.requestAnimationFrame(() => {
+			scrollToLatest('auto');
+		});
+
+		return () => {
+			window.cancelAnimationFrame(rafId);
+		};
+	}, [hasUserMessage, messages, scrollToLatest, scheduleScrollToLatest]);
 
 	const handleRetry = (aiKey: string) => {
 		if (generating) return;
@@ -268,28 +348,6 @@ export default function ChatContent() {
 				actionRender: () => <Actions.Copy text={text} />,
 			},
 			{
-				key: 'feedback',
-				actionRender: () => (
-					<Actions.Feedback
-						value={feedback}
-						styles={{
-							liked: {
-								color: '#ff4d4f',
-							},
-							disliked: {
-								color: '#000000',
-							},
-						}}
-						onChange={(val) => {
-							setFeedbackMap((prev) => ({
-								...prev,
-								[aiKey]: val,
-							}));
-						}}
-					/>
-				),
-			},
-			{
 				key: 'retry',
 				icon: <RedoOutlined />,
 				label: '重试',
@@ -312,13 +370,23 @@ export default function ChatContent() {
 			const thoughtItems = isCurrentAiMessage
 				? thoughtChainItems
 				: completedThoughtChainItems;
+			const isStreaming = Boolean(data.streaming);
 
 			return {
 				placement: 'start' as const,
 				variant: 'outlined' as const,
+				typing:
+					isCurrentAiMessage && isStreaming
+						? {
+								effect: 'typing' as const,
+								step: 1,
+								interval: 22,
+								keepPrefix: true,
+							}
+						: false,
 				avatar: (
 					<Avatar
-						size={45}
+						size={35}
 						src={aiAvatar.src}
 					/>
 				),
@@ -332,12 +400,14 @@ export default function ChatContent() {
 						<ThoughtChain
 							line='dashed'
 							items={thoughtItems}
-							defaultExpandedKeys={['tc-1', 'tc-2', 'tc-3']}
+							defaultExpandedKeys={[]}
 						/>
 					</Think>
 				) : undefined,
 				footer:
-					String(data.key).startsWith('ai-') && String(data.content ?? '') ? (
+					String(data.key).startsWith('ai-') &&
+					String(data.content ?? '') &&
+					!isStreaming ? (
 						<div className='flex flex-col gap-2'>
 							<Actions
 								items={createAiActions(data)}
@@ -369,27 +439,18 @@ export default function ChatContent() {
 				{/* 开始对话后：显示对话框 */}
 				{hasUserMessage && (
 					<div
-						className='min-h-0 flex-1 overflow-y-auto rounded-2xl p-3 flex flex-col gap-4'
+						ref={conversationRef}
+						className='conversation-scroll-area min-h-0 flex-1 overflow-y-auto rounded-2xl p-3 flex flex-col gap-4'
 						style={{
 							background: 'var(--app-panel)',
+							scrollbarGutter: 'stable',
 						}}
 					>
-						{/* 之前的对话 */}
-						{previousMessages.length > 0 && (
-							<Bubble.List
-								items={previousMessages}
-								role={bubbleRole}
-							/>
-						)}
-
-						{/* 最新一轮消息 */}
-						{latestRoundMessages.length > 0 && (
-							<Bubble.List
-								items={latestRoundMessages}
-								autoScroll
-								role={bubbleRole}
-							/>
-						)}
+						<Bubble.List
+							items={messages}
+							autoScroll={false}
+							role={bubbleRole}
+						/>
 					</div>
 				)}
 			</div>
