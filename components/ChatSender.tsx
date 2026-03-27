@@ -19,7 +19,40 @@ import {
 	type GetProp,
 	type GetRef,
 } from 'antd';
-import { useEffect, useRef, useState } from 'react';
+import {
+	type ReactNode,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
+
+const CHAT_SENDER_TEXT = {
+	placeholder: '请输入内容，回车发送',
+	attachmentsTitle: 'Attachments',
+	dropFileTitle: 'Drop file here',
+	uploadFileTitle: 'Upload files',
+	uploadFileDescription: 'Click or drag files to this area to upload',
+	deepThinking: 'Deep Thinking',
+	webSearch: 'Web Search',
+	agentMode: 'Agent Mode',
+	skillAndMcp: 'Skill & MCP',
+	toggleAttachments: '切换附件面板',
+	voiceInput: '语音输入',
+} as const;
+
+type FooterSwitchItem = {
+	key: string;
+	label: string;
+	icon: ReactNode;
+	value: boolean;
+	onChange: (checked: boolean) => void;
+};
+
+function FooterDivider() {
+	return <Divider orientation='vertical' />;
+}
 
 type SpeechRecognitionResultLike = {
 	transcript?: string;
@@ -79,33 +112,41 @@ export default function ChatSender({
 	const valueRef = useRef(value);
 	const objectUrlMapRef = useRef<Map<string, string>>(new Map());
 
-	const iconStyle = {
-		fontSize: 15,
-		color: token.colorText,
-	};
+	const iconStyle = useMemo(
+		() => ({
+			fontSize: 15,
+			color: token.colorText,
+		}),
+		[token.colorText],
+	);
 
-	const getAttachmentUid = (
-		item: NonNullable<GetProp<AttachmentsProps, 'items'>>[number],
-	) => String(item.uid ?? item.name ?? 'unknown');
+	const getAttachmentUid = useCallback(
+		(item: NonNullable<GetProp<AttachmentsProps, 'items'>>[number]) =>
+			String(item.uid ?? item.name ?? 'unknown'),
+		[],
+	);
 
-	const revokeAllObjectUrls = () => {
+	const revokeAllObjectUrls = useCallback(() => {
 		objectUrlMapRef.current.forEach((url) => {
 			URL.revokeObjectURL(url);
 		});
 		objectUrlMapRef.current.clear();
-	};
+	}, []);
 
-	const cleanupRemovedObjectUrls = (
-		nextList: GetProp<AttachmentsProps, 'items'> = [],
-	) => {
-		const activeUids = new Set(nextList.map((item) => getAttachmentUid(item)));
-		objectUrlMapRef.current.forEach((url, uid) => {
-			if (!activeUids.has(uid)) {
-				URL.revokeObjectURL(url);
-				objectUrlMapRef.current.delete(uid);
-			}
-		});
-	};
+	const cleanupRemovedObjectUrls = useCallback(
+		(nextList: GetProp<AttachmentsProps, 'items'> = []) => {
+			const activeUids = new Set(
+				nextList.map((item) => getAttachmentUid(item)),
+			);
+			objectUrlMapRef.current.forEach((url, uid) => {
+				if (!activeUids.has(uid)) {
+					URL.revokeObjectURL(url);
+					objectUrlMapRef.current.delete(uid);
+				}
+			});
+		},
+		[getAttachmentUid],
+	);
 
 	useEffect(() => {
 		valueRef.current = value;
@@ -164,47 +205,50 @@ export default function ChatSender({
 		};
 	}, []);
 
-	const normalizeAttachmentItems = (
-		fileList: GetProp<AttachmentsProps, 'items'> = [],
-	): GetProp<AttachmentsProps, 'items'> =>
-		fileList.map((item) => {
-			const uid = getAttachmentUid(item);
-			const mimeType = item.type ?? '';
-			const isImage = mimeType.startsWith('image/');
+	const normalizeAttachmentItems = useCallback(
+		(
+			fileList: GetProp<AttachmentsProps, 'items'> = [],
+		): GetProp<AttachmentsProps, 'items'> =>
+			fileList.map((item) => {
+				const uid = getAttachmentUid(item);
+				const mimeType = item.type ?? '';
+				const isImage = mimeType.startsWith('image/');
 
-			if (!isImage) {
-				return item;
-			}
-
-			let src = item.thumbUrl ?? item.url;
-
-			if (!src && item.originFileObj instanceof Blob) {
-				const cached = objectUrlMapRef.current.get(uid);
-				if (cached) {
-					src = cached;
-				} else {
-					const objectUrl = URL.createObjectURL(item.originFileObj);
-					objectUrlMapRef.current.set(uid, objectUrl);
-					src = objectUrl;
+				if (!isImage) {
+					return item;
 				}
-			}
 
-			return {
-				...item,
-				cardType: 'image',
-				src,
-				imageProps: {
-					preview: true,
-					style: {
-						width: '100%',
-						height: 220,
-						objectFit: 'cover',
+				let src = item.thumbUrl ?? item.url;
+
+				if (!src && item.originFileObj instanceof Blob) {
+					const cached = objectUrlMapRef.current.get(uid);
+					if (cached) {
+						src = cached;
+					} else {
+						const objectUrl = URL.createObjectURL(item.originFileObj);
+						objectUrlMapRef.current.set(uid, objectUrl);
+						src = objectUrl;
+					}
+				}
+
+				return {
+					...item,
+					cardType: 'image',
+					src,
+					imageProps: {
+						preview: true,
+						style: {
+							width: '100%',
+							height: 220,
+							objectFit: 'cover',
+						},
 					},
-				},
-			};
-		});
+				};
+			}),
+		[getAttachmentUid],
+	);
 
-	const handleVoiceClick = () => {
+	const handleVoiceClick = useCallback(() => {
 		if (!recognitionRef.current) {
 			message.info('当前浏览器不支持语音识别，请使用 Chrome 或 Edge。');
 			return;
@@ -219,24 +263,82 @@ export default function ChatSender({
 		} catch {
 			message.warning('无法启动语音识别，请检查麦克风权限。');
 		}
-	};
+	}, [isRecording]);
 
-	const handleSubmit = (nextValue: string) => {
-		if (loading) return;
-		const text = (nextValue ?? valueRef.current ?? '').trim();
-		if (!text) return;
+	const handleSubmit = useCallback(
+		(nextValue: string) => {
+			if (loading) return;
+			const text = (nextValue ?? valueRef.current ?? '').trim();
+			if (!text) return;
 
-		recognitionRef.current?.stop?.();
-		setIsRecording(false);
-		onSubmitAction(text);
-		revokeAllObjectUrls();
-		setAttachments([]);
-		setOpen(false);
-	};
+			recognitionRef.current?.stop?.();
+			setIsRecording(false);
+			onSubmitAction(text);
+			revokeAllObjectUrls();
+			setAttachments([]);
+			setOpen(false);
+		},
+		[loading, onSubmitAction, revokeAllObjectUrls],
+	);
+
+	const handleAttachmentChange = useCallback(
+		({
+			fileList,
+		}: {
+			fileList: NonNullable<GetProp<AttachmentsProps, 'items'>>;
+		}) => {
+			const normalized = normalizeAttachmentItems(fileList);
+			cleanupRemovedObjectUrls(normalized);
+			setAttachments(normalized);
+		},
+		[cleanupRemovedObjectUrls, normalizeAttachmentItems],
+	);
+
+	const attachmentPlaceholder: NonNullable<AttachmentsProps['placeholder']> =
+		useCallback(
+			(type: string) =>
+				type === 'drop'
+					? {
+							title: CHAT_SENDER_TEXT.dropFileTitle,
+						}
+					: {
+							icon: <CloudUploadOutlined />,
+							title: CHAT_SENDER_TEXT.uploadFileTitle,
+							description: CHAT_SENDER_TEXT.uploadFileDescription,
+						},
+			[],
+		);
+
+	const modelSwitchItems = useMemo<FooterSwitchItem[]>(
+		() => [
+			{
+				key: 'deep-thinking',
+				label: CHAT_SENDER_TEXT.deepThinking,
+				icon: <OpenAIOutlined />,
+				value: deepThinking,
+				onChange: setDeepThinking,
+			},
+			{
+				key: 'web-search',
+				label: CHAT_SENDER_TEXT.webSearch,
+				icon: <SearchOutlined />,
+				value: webSearch,
+				onChange: setWebSearch,
+			},
+			{
+				key: 'agent-mode',
+				label: CHAT_SENDER_TEXT.agentMode,
+				icon: <AntDesignOutlined />,
+				value: agentMode,
+				onChange: setAgentMode,
+			},
+		],
+		[agentMode, deepThinking, webSearch],
+	);
 
 	const senderHeader = (
 		<Sender.Header
-			title='Attachments'
+			title={CHAT_SENDER_TEXT.attachmentsTitle}
 			open={open}
 			onOpenChange={setOpen}
 			forceRender
@@ -252,22 +354,8 @@ export default function ChatSender({
 				multiple
 				items={attachments}
 				overflow='wrap'
-				onChange={({ fileList }) => {
-					const normalized = normalizeAttachmentItems(fileList);
-					cleanupRemovedObjectUrls(normalized);
-					setAttachments(normalized);
-				}}
-				placeholder={(type) =>
-					type === 'drop'
-						? {
-								title: 'Drop file here',
-							}
-						: {
-								icon: <CloudUploadOutlined />,
-								title: 'Upload files',
-								description: 'Click or drag files to this area to upload',
-							}
-				}
+				onChange={handleAttachmentChange}
+				placeholder={attachmentPlaceholder}
 				getDropContainer={() => senderRef.current?.nativeElement}
 			/>
 		</Sender.Header>
@@ -287,7 +375,7 @@ export default function ChatSender({
 			}}
 			suffix={false}
 			autoSize={{ minRows: 1, maxRows: 6 }}
-			placeholder='请输入内容，回车发送'
+			placeholder={CHAT_SENDER_TEXT.placeholder}
 			submitType='enter'
 			onPasteFile={(files) => {
 				for (const file of files) {
@@ -315,29 +403,24 @@ export default function ChatSender({
 							align='center'
 							wrap
 						>
-							<Sender.Switch
-								icon={<OpenAIOutlined />}
-								value={deepThinking}
-								onChange={setDeepThinking}
-							>
-								Deep Thinking
-							</Sender.Switch>
-							<Divider orientation='vertical' />
-							<Sender.Switch
-								icon={<SearchOutlined />}
-								value={webSearch}
-								onChange={setWebSearch}
-							>
-								Web Search
-							</Sender.Switch>
-							<Divider orientation='vertical' />
-							<Sender.Switch
-								icon={<AntDesignOutlined />}
-								value={agentMode}
-								onChange={setAgentMode}
-							>
-								Agent Mode
-							</Sender.Switch>
+							{modelSwitchItems.map((item, index) => (
+								<Flex
+									key={item.key}
+									align='center'
+									gap='small'
+								>
+									<Sender.Switch
+										icon={item.icon}
+										value={item.value}
+										onChange={item.onChange}
+									>
+										{item.label}
+									</Sender.Switch>
+									{index < modelSwitchItems.length - 1 ? (
+										<FooterDivider />
+									) : null}
+								</Flex>
+							))}
 						</Flex>
 						<Flex
 							align='center'
@@ -347,18 +430,20 @@ export default function ChatSender({
 								icon={<ApiOutlined />}
 								style={iconStyle}
 							>
-								Skill & MCP
+								{CHAT_SENDER_TEXT.skillAndMcp}
 							</Sender.Switch>
-							<Divider orientation='vertical' />
+							<FooterDivider />
 
 							<Button
+								aria-label={CHAT_SENDER_TEXT.toggleAttachments}
 								style={iconStyle}
 								type='text'
 								icon={<PaperClipOutlined />}
 								onClick={() => setOpen((prev) => !prev)}
 							/>
-							<Divider orientation='vertical' />
+							<FooterDivider />
 							<Button
+								aria-label={CHAT_SENDER_TEXT.voiceInput}
 								type='text'
 								style={{
 									...iconStyle,
@@ -367,7 +452,7 @@ export default function ChatSender({
 								icon={<AudioOutlined />}
 								onClick={handleVoiceClick}
 							/>
-							<Divider orientation='vertical' />
+							<FooterDivider />
 							{actionsNode}
 						</Flex>
 					</Flex>

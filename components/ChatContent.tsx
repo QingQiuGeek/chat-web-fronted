@@ -37,6 +37,9 @@ type ChatMessage = {
 	streaming?: boolean;
 };
 
+const AI_KEY_PREFIX = 'ai-';
+const USER_KEY_PREFIX = 'user-';
+
 export default function ChatContent() {
 	const [value, setValue] = useState('');
 	const [thinking, setThinking] = useState(false);
@@ -167,103 +170,142 @@ export default function ChatContent() {
 		[],
 	);
 
-	const sendMessage = (raw: string) => {
-		const text = raw.trim();
-		if (!text) return;
-		if (generating) return;
-		pendingScrollRef.current = true;
+	const buildSourcesItems = useCallback(
+		(query: string): SourcesProps['items'] => {
+			const encoded = encodeURIComponent(query);
+			return [
+				{
+					key: 's-1',
+					title: 'Ant Design X 组件总览',
+					url: 'https://ant-design-x.antgroup.com/components/overview-cn',
+					icon: <LinkOutlined />,
+					description: '官方组件入口与能力清单',
+				},
+				{
+					key: 's-2',
+					title: 'Bubble 对话气泡',
+					url: 'https://ant-design-x.antgroup.com/components/bubble-cn',
+					icon: <LinkOutlined />,
+					description: '消息结构、流式传输、角色与插槽',
+				},
+				{
+					key: 's-3',
+					title: `搜索：${query}`,
+					url: `https://www.bing.com/search?q=${encoded}`,
+					icon: <LinkOutlined />,
+					description: '外部检索结果（示例来源）',
+				},
+			];
+		},
+		[],
+	);
 
-		clearAllTimers();
+	const sendMessage = useCallback(
+		(raw: string) => {
+			const text = raw.trim();
+			if (!text) return;
+			if (generating) return;
+			pendingScrollRef.current = true;
 
-		const timeId = String(++messageIdRef.current);
-		const streamToken = ++activeStreamTokenRef.current;
-		const userKey = `user-${timeId}`;
-		const aiKey = `ai-${timeId}`;
-		const fullReply = `关于"${text}"，我建议先从需求拆分、组件职责边界、数据流和交互状态管理四个层面设计。需要的话我可以继续给你产出可直接落地的代码版本。`;
-		let streamFinished = false;
+			clearAllTimers();
 
-		const finishStream = (content: string) => {
-			if (activeStreamTokenRef.current !== streamToken) return;
-			if (streamFinished) return;
-			streamFinished = true;
-			setThinking(false);
-			setGenerating(false);
-			setMessages((prev) =>
-				prev.map((item) =>
-					item.key === aiKey
-						? {
-								...item,
-								content,
-								streaming: false,
-							}
-						: item,
-				),
-			);
-			clearStreamTimers();
-		};
+			const timeId = String(++messageIdRef.current);
+			const streamToken = ++activeStreamTokenRef.current;
+			const userKey = `${USER_KEY_PREFIX}${timeId}`;
+			const aiKey = `${AI_KEY_PREFIX}${timeId}`;
+			const fullReply = `关于"${text}"，我建议先从需求拆分、组件职责边界、数据流和交互状态管理四个层面设计。需要的话我可以继续给你产出可直接落地的代码版本。`;
+			let streamFinished = false;
 
-		setValue('');
-		setThinking(true);
-		setGenerating(true);
-		setCurrentAiKey(aiKey);
-		setSourcesMap((prev) => ({
-			...prev,
-			[aiKey]: buildSourcesItems(text),
-		}));
-		// 先添加用户消息和 AI 占位消息（用于承载思考过程）
-		setMessages((prev) => [
-			...prev,
-			{ key: userKey, role: 'user', content: text },
-			{ key: aiKey, role: 'ai', content: '', streaming: true },
-		]);
-		scheduleScrollToLatest('auto');
-
-		streamFinalizeTimeoutIdRef.current = window.setTimeout(() => {
-			finishStream(fullReply);
-		}, 15000);
-
-		const thinkTimeoutId = window.setTimeout(() => {
-			if (activeStreamTokenRef.current !== streamToken) return;
-			if (streamFinished) return;
-			thinkTimeoutIdRef.current = null;
-			setThinking(false);
-
-			let index = 0;
-			const chunkSize = Math.max(1, Math.ceil(fullReply.length / 36));
-
-			const pushChunk = () => {
+			const finishStream = (content: string) => {
 				if (activeStreamTokenRef.current !== streamToken) return;
 				if (streamFinished) return;
-
-				index = Math.min(fullReply.length, index + chunkSize);
-				const nextContent = fullReply.slice(0, index);
-				const isDone = index >= fullReply.length;
-
+				streamFinished = true;
+				setThinking(false);
+				setGenerating(false);
 				setMessages((prev) =>
 					prev.map((item) =>
 						item.key === aiKey
 							? {
 									...item,
-									content: nextContent,
-									streaming: !isDone,
+									content,
+									streaming: false,
 								}
 							: item,
 					),
 				);
-				scheduleScrollToLatest('auto');
-
-				if (isDone) {
-					finishStream(fullReply);
-					return;
-				}
-
-				streamStepTimeoutIdRef.current = window.setTimeout(pushChunk, 34);
+				clearStreamTimers();
 			};
 
-			pushChunk();
-		}, 650);
-		thinkTimeoutIdRef.current = thinkTimeoutId;
-	};
+			setValue('');
+			setThinking(true);
+			setGenerating(true);
+			setCurrentAiKey(aiKey);
+			setSourcesMap((prev) => ({
+				...prev,
+				[aiKey]: buildSourcesItems(text),
+			}));
+			// 先添加用户消息和 AI 占位消息（用于承载思考过程）
+			setMessages((prev) => [
+				...prev,
+				{ key: userKey, role: 'user', content: text },
+				{ key: aiKey, role: 'ai', content: '', streaming: true },
+			]);
+			scheduleScrollToLatest('auto');
+
+			streamFinalizeTimeoutIdRef.current = window.setTimeout(() => {
+				finishStream(fullReply);
+			}, 15000);
+
+			const thinkTimeoutId = window.setTimeout(() => {
+				if (activeStreamTokenRef.current !== streamToken) return;
+				if (streamFinished) return;
+				thinkTimeoutIdRef.current = null;
+				setThinking(false);
+
+				let index = 0;
+				const chunkSize = Math.max(1, Math.ceil(fullReply.length / 36));
+
+				const pushChunk = () => {
+					if (activeStreamTokenRef.current !== streamToken) return;
+					if (streamFinished) return;
+
+					index = Math.min(fullReply.length, index + chunkSize);
+					const nextContent = fullReply.slice(0, index);
+					const isDone = index >= fullReply.length;
+
+					setMessages((prev) =>
+						prev.map((item) =>
+							item.key === aiKey
+								? {
+										...item,
+										content: nextContent,
+										streaming: !isDone,
+									}
+								: item,
+						),
+					);
+					scheduleScrollToLatest('auto');
+
+					if (isDone) {
+						finishStream(fullReply);
+						return;
+					}
+
+					streamStepTimeoutIdRef.current = window.setTimeout(pushChunk, 34);
+				};
+
+				pushChunk();
+			}, 650);
+			thinkTimeoutIdRef.current = thinkTimeoutId;
+		},
+		[
+			buildSourcesItems,
+			clearAllTimers,
+			clearStreamTimers,
+			generating,
+			scheduleScrollToLatest,
+		],
+	);
 
 	// 判断是否有用户消息（即是否开始对话）
 	const hasUserMessage = messages.some((m) => m.role === 'user');
@@ -284,18 +326,21 @@ export default function ChatContent() {
 		};
 	}, [hasUserMessage, messages, scrollToLatest, scheduleScrollToLatest]);
 
-	const handleRetry = (aiKey: string) => {
-		if (generating) return;
-		const sourceKey = aiKey.replace(/^ai-/, 'user-');
-		const source = messages.find(
-			(m) => m.key === sourceKey && m.role === 'user',
-		);
-		if (source?.content) {
-			sendMessage(source.content);
-		}
-	};
+	const handleRetry = useCallback(
+		(aiKey: string) => {
+			if (generating) return;
+			const sourceKey = aiKey.replace(/^ai-/, USER_KEY_PREFIX);
+			const source = messages.find(
+				(m) => m.key === sourceKey && m.role === 'user',
+			);
+			if (source?.content) {
+				sendMessage(source.content);
+			}
+		},
+		[generating, messages, sendMessage],
+	);
 
-	const handleShare = async (text: string) => {
+	const handleShare = useCallback(async (text: string) => {
 		if (!text) return;
 		try {
 			if (navigator.share) {
@@ -308,126 +353,128 @@ export default function ChatContent() {
 		if (navigator.clipboard) {
 			await navigator.clipboard.writeText(text);
 		}
-	};
+	}, []);
 
-	const buildSourcesItems = (query: string): SourcesProps['items'] => {
-		const encoded = encodeURIComponent(query);
-		return [
-			{
-				key: 's-1',
-				title: 'Ant Design X 组件总览',
-				url: 'https://ant-design-x.antgroup.com/components/overview-cn',
-				icon: <LinkOutlined />,
-				description: '官方组件入口与能力清单',
-			},
-			{
-				key: 's-2',
-				title: 'Bubble 对话气泡',
-				url: 'https://ant-design-x.antgroup.com/components/bubble-cn',
-				icon: <LinkOutlined />,
-				description: '消息结构、流式传输、角色与插槽',
-			},
-			{
-				key: 's-3',
-				title: `搜索：${query}`,
-				url: `https://www.bing.com/search?q=${encoded}`,
-				icon: <LinkOutlined />,
-				description: '外部检索结果（示例来源）',
-			},
-		];
-	};
+	const createAiActions = useCallback(
+		(data: BubbleItemType): ActionsProps['items'] => {
+			const aiKey = String(data.key);
+			const text = String(data.content ?? '');
 
-	const createAiActions = (data: BubbleItemType): ActionsProps['items'] => {
-		const aiKey = String(data.key);
-		const feedback = feedbackMap[aiKey] ?? 'default';
-		const text = String(data.content ?? '');
-
-		return [
-			{
-				key: 'copy',
-				actionRender: () => <Actions.Copy text={text} />,
-			},
-			{
-				key: 'retry',
-				icon: <RedoOutlined />,
-				label: '重试',
-				onItemClick: () => handleRetry(aiKey),
-			},
-			{
-				key: 'share',
-				icon: <ShareAltOutlined />,
-				label: '分享',
-				onItemClick: () => {
-					void handleShare(text);
+			return [
+				{
+					key: 'copy',
+					actionRender: () => <Actions.Copy text={text} />,
 				},
-			},
-		];
-	};
-
-	const bubbleRole = {
-		ai: (data: BubbleItemType) => {
-			const isCurrentAiMessage = String(data.key) === currentAiKey;
-			const thoughtItems = isCurrentAiMessage
-				? thoughtChainItems
-				: completedThoughtChainItems;
-			const isStreaming = Boolean(data.streaming);
-
-			return {
-				placement: 'start' as const,
-				variant: 'outlined' as const,
-				typing:
-					isCurrentAiMessage && isStreaming
-						? {
-								effect: 'typing' as const,
-								step: 1,
-								interval: 22,
-								keepPrefix: true,
-							}
-						: false,
-				avatar: (
-					<Avatar
-						size={35}
-						src={aiAvatar.src}
-					/>
-				),
-				header: String(data.key).startsWith('ai-') ? (
-					<Think
-						title={isCurrentAiMessage && thinking ? '思考中' : '思考完成'}
-						loading={isCurrentAiMessage && thinking}
-						defaultExpanded={false}
-						style={{ marginBottom: 8 }}
-					>
-						<ThoughtChain
-							line='dashed'
-							items={thoughtItems}
-							defaultExpandedKeys={[]}
-						/>
-					</Think>
-				) : undefined,
-				footer:
-					String(data.key).startsWith('ai-') &&
-					String(data.content ?? '') &&
-					!isStreaming ? (
-						<div className='flex flex-col gap-2'>
-							<Actions
-								items={createAiActions(data)}
-								variant='borderless'
-								fadeInLeft
-							/>
-							<Sources
-								title={`Used ${sourcesMap[String(data.key)]?.length ?? 0} sources`}
-								items={sourcesMap[String(data.key)] ?? []}
-								defaultExpanded={false}
-								expandIconPosition='end'
-							/>
-						</div>
-					) : undefined,
-				footerPlacement: 'outer-start' as const,
-			};
+				{
+					key: 'retry',
+					icon: <RedoOutlined />,
+					label: '重试',
+					onItemClick: () => handleRetry(aiKey),
+				},
+				{
+					key: 'share',
+					icon: <ShareAltOutlined />,
+					label: '分享',
+					onItemClick: () => {
+						void handleShare(text);
+					},
+				},
+			];
 		},
-		user: { placement: 'end' as const, variant: 'filled' as const },
-		system: { variant: 'borderless' as const },
-	};
+		[handleRetry, handleShare],
+	);
+
+	const bubbleRole = useMemo(
+		() => ({
+			ai: (data: BubbleItemType) => {
+				const isCurrentAiMessage = String(data.key) === currentAiKey;
+				const thoughtItems = isCurrentAiMessage
+					? thoughtChainItems
+					: completedThoughtChainItems;
+				const isStreaming = Boolean(data.streaming);
+				const isAiMessage = String(data.key).startsWith(AI_KEY_PREFIX);
+
+				return {
+					placement: 'start' as const,
+					variant: 'outlined' as const,
+					typing:
+						isCurrentAiMessage && isStreaming
+							? {
+									effect: 'typing' as const,
+									step: 1,
+									interval: 22,
+									keepPrefix: true,
+								}
+							: false,
+					avatar: (
+						<Avatar
+							size={35}
+							src={aiAvatar.src}
+						/>
+					),
+					header: isAiMessage ? (
+						<Think
+							title={isCurrentAiMessage && thinking ? '思考中' : '思考完成'}
+							loading={isCurrentAiMessage && thinking}
+							defaultExpanded={false}
+							style={{ marginBottom: 8 }}
+						>
+							<ThoughtChain
+								line='dashed'
+								items={thoughtItems}
+								defaultExpandedKeys={[]}
+							/>
+						</Think>
+					) : undefined,
+					footer:
+						isAiMessage && String(data.content ?? '') && !isStreaming ? (
+							<div className='flex flex-col gap-2'>
+								<Actions
+									items={createAiActions(data)}
+									variant='borderless'
+									fadeInLeft
+								/>
+								<Sources
+									title={`Used ${sourcesMap[String(data.key)]?.length ?? 0} sources`}
+									items={sourcesMap[String(data.key)] ?? []}
+									defaultExpanded={false}
+									expandIconPosition='end'
+								/>
+							</div>
+						) : undefined,
+					footerPlacement: 'outer-start' as const,
+				};
+			},
+			user: { placement: 'end' as const, variant: 'filled' as const },
+			system: { variant: 'borderless' as const },
+		}),
+		[
+			completedThoughtChainItems,
+			createAiActions,
+			currentAiKey,
+			sourcesMap,
+			thinking,
+			thoughtChainItems,
+		],
+	);
+
+	const handleCancel = useCallback(() => {
+		clearAllTimers();
+		setThinking(false);
+		setGenerating(false);
+		setCurrentAiKey(null);
+		const activeAiKey = currentAiKey;
+		setMessages((prev) =>
+			prev.map((item) =>
+				item.key === activeAiKey
+					? {
+							...item,
+							streaming: false,
+						}
+					: item,
+			),
+		);
+	}, [clearAllTimers, currentAiKey]);
 
 	return (
 		<div className='flex-1 min-h-0 px-4 pb-4 flex flex-col gap-3'>
@@ -467,22 +514,7 @@ export default function ChatContent() {
 					onChangeAction={setValue}
 					onSubmitAction={sendMessage}
 					loading={generating}
-					onCancelAction={() => {
-						clearAllTimers();
-						setThinking(false);
-						setGenerating(false);
-						setCurrentAiKey(null);
-						setMessages((prev) =>
-							prev.map((item) =>
-								item.key === currentAiKey
-									? {
-											...item,
-											streaming: false,
-										}
-									: item,
-							),
-						);
-					}}
+					onCancelAction={handleCancel}
 				/>
 			</div>
 		</div>
