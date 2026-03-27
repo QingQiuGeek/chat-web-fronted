@@ -163,3 +163,102 @@ textarea:focus {
 .dark .theme-adaptive-icon {
 	filter: brightness(0) invert(1);
 }
+
+.theme-icon-moon {
+	display: none;
+}
+
+.theme-icon-sun {
+	display: inline;
+}
+
+.dark .theme-icon-moon {
+	display: inline;
+}
+
+.dark .theme-icon-sun {
+	display: none;
+}
+
+/* Ant Design X Sender 主题统一 */
+.ant-sender,
+.ant-sender-header,
+.ant-sender-content,
+.ant-sender-footer,
+.ant-sender-input {
+	background: var(--app-panel) !important;
+	color: var(--app-text) !important;
+	border: none !important;
+	box-shadow: none !important;
+}
+
+.ant-sender .ant-sender-input-slot,
+.ant-sender .ant-sender-input-slot *,
+.ant-sender textarea,
+.ant-sender .ant-input,
+.ant-sender .ant-input-textarea textarea {
+	color: #000000 !important;
+	font-size: 15px !important;
+	line-height: 1.35 !important;
+	font-weight: 500 !important;
+}
+
+.ant-sender .ant-sender-input-slot:empty::before,
+.ant-sender textarea::placeholder,
+.ant-sender .ant-input::placeholder,
+.ant-sender .ant-input-textarea textarea::placeholder {
+	color: rgba(0, 0, 0, 0.45) !important;
+	font-size: 15px !important;
+}
+
+.ant-sender .ant-btn,
+.ant-sender .ant-sender-switch {
+	color: var(--app-text) !important;
+	border: none !important;
+	box-shadow: none !important;
+}
+
+.ant-sender .ant-btn-default,
+.ant-sender .ant-sender-switch {
+	background: color-mix(
+		in srgb,
+		var(--app-panel) 88%,
+		var(--app-hover)
+	) !important;
+}
+
+.ant-sender .ant-btn-primary {
+	background: #1677ff !important;
+	border-color: #1677ff !important;
+	color: #fff !important;
+}
+
+/* Sender.Switch 边框与选中效果 */
+.ant-sender .ant-sender-switch .ant-btn {
+	border: 1px solid var(--app-border) !important;
+	border-radius: 12px !important;
+	background: color-mix(
+		in srgb,
+		var(--app-panel) 90%,
+		var(--app-hover)
+	) !important;
+	transition: all 0.2s ease !important;
+}
+
+.ant-sender .ant-sender-switch .ant-sender-switch-content {
+	border-radius: 10px !important;
+	transition: all 0.2s ease !important;
+}
+
+.ant-sender .ant-sender-switch.ant-sender-switch-checked .ant-btn {
+	border-color: #1677ff !important;
+	color: #1677ff !important;
+	background: color-mix(in srgb, #1677ff 12%, var(--app-panel)) !important;
+	box-shadow: 0 0 0 1px color-mix(in srgb, #1677ff 35%, transparent) !important;
+}
+
+.ant-sender
+	.ant-sender-switch.ant-sender-switch-checked
+	.ant-sender-switch-content {
+	background: color-mix(in srgb, #1677ff 14%, transparent) !important;
+}

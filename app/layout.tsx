@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { cookies } from 'next/headers';
-import Script from 'next/script';
 import './globals.css';
 
 const inter = Inter({
@@ -28,34 +27,23 @@ export async function generateViewport(): Promise<Viewport> {
 	};
 }
 
-export default function RootLayout({
+export default async function RootLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	const cookieStore = await cookies();
+	const themeCookie = cookieStore.get('theme')?.value;
+	const isDark = themeCookie !== 'light';
+	const htmlClassName = `${inter.variable} h-full antialiased${isDark ? ' dark' : ''}`;
+
 	return (
 		<html
 			lang='en'
-			className={`${inter.variable} h-full antialiased`}
+			className={htmlClassName}
 			suppressHydrationWarning
 		>
-			<body className='h-full w-full m-0 p-0 overflow-hidden'>
-				<Script
-					id='theme-init'
-					strategy='beforeInteractive'
-				>
-					{`
-						(function() {
-							try {
-								var theme = document.cookie.match(/(^| )theme=([^;]+)/);
-								var isDark = theme ? theme[2] === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
-								document.documentElement.classList.toggle('dark', isDark);
-							} catch (e) {}
-						})();
-					`}
-				</Script>
-				{children}
-			</body>
+			<body className='h-full w-full m-0 p-0 overflow-hidden'>{children}</body>
 		</html>
 	);
 }

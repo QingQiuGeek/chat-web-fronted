@@ -1,21 +1,14 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
 import questionIcon from '@/app/question.png';
 
 export default function Header() {
-	const [isDark, setIsDark] = useState(() => {
-		if (typeof window === 'undefined') return true;
-		return document.documentElement.classList.contains('dark');
-	});
-
 	// 主题切换函数
 	const toggleTheme = () => {
 		const html = document.documentElement;
 		const nextIsDark = !html.classList.contains('dark');
 		html.classList.toggle('dark', nextIsDark);
-		setIsDark(nextIsDark);
 		localStorage.setItem('theme', nextIsDark ? 'dark' : 'light');
 		document.cookie = `theme=${nextIsDark ? 'dark' : 'light'}; path=/; max-age=31536000`;
 		const metaThemeColor = document.querySelector('meta[name="theme-color"]');
@@ -54,7 +47,8 @@ export default function Header() {
 					onClick={toggleTheme}
 					className='cursor-pointer w-9 h-9 rounded-full hover:bg-[var(--app-hover)] [color:var(--app-muted)] transition-colors'
 				>
-					{isDark ? '🌙 ' : '☀️'}
+					<span className='theme-icon-moon'>🌙</span>
+					<span className='theme-icon-sun'>☀️</span>
 				</button>
 
 				{/* User Actions */}
