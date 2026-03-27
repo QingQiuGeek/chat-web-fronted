@@ -152,7 +152,7 @@ export default function Sidebar() {
 			return {
 				key: item.key,
 				label: (
-					<div className='flex min-w-0 flex-col py-1'>
+					<div className='flex min-w-0 flex-col py-2'>
 						<span className='text-sm font-medium truncate text-[var(--app-text)]'>
 							{item.title}
 						</span>
@@ -332,18 +332,12 @@ export default function Sidebar() {
 					{/* 登陆注册 */}
 					<div className='mt-auto p-3'>
 						<div className='bg-[rgba(255,255,255,0.05)] rounded-2xl p-4 flex flex-col gap-3'>
-							<h3 className='font-semibold text-[#ececec] text-sm'>
-								Sign up or log in
-							</h3>
 							<p className='text-xs text-[rgba(255,255,255,0.7)] leading-5'>
 								Save your chat history, share chats, and personalize your
 								experience.
 							</p>
-							<button className='w-full bg-white text-[#171717] font-semibold rounded-2xl py-2.5 text-sm hover:bg-gray-200 transition-colors mt-1'>
-								Log in
-							</button>
-							<button className='w-full bg-transparent border border-[rgba(255,255,255,0.15)] text-[#ececec] font-semibold rounded-2xl py-2.5 text-sm hover:bg-[rgba(255,255,255,0.1)] transition-colors'>
-								Sign up
+							<button className='cursor-pointer [background:var(--app-text)] [color:var(--app-bg)] rounded-full px-4 py-2 text-sm font-medium transition-colors opacity-95 hover:opacity-100'>
+								Sign up / Sign in
 							</button>
 						</div>
 					</div>

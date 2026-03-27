@@ -303,8 +303,8 @@ textarea:focus {
 	width: 100%;
 	border-radius: 10px;
 	margin-bottom: 0;
-	padding-top: 0;
-	padding-bottom: 0;
+	padding-top: 6px;
+	padding-bottom: 6px;
 	transition: background-color 0.2s ease;
 }
 
@@ -480,14 +480,66 @@ textarea:focus {
 	color: var(--app-input-placeholder) !important;
 }
 
+/* 避免主题切换时输入占位区出现瞬时底色闪烁 */
+.chat-sender.ant-sender .ant-sender-input,
+.chat-sender.ant-sender .ant-sender-content,
+.chat-sender.ant-sender .ant-sender-input-slot,
+.chat-sender.ant-sender textarea,
+.chat-sender.ant-sender .ant-input,
+.chat-sender.ant-sender .ant-input-textarea textarea {
+	background: transparent !important;
+	transition:
+		background-color 0.2s ease,
+		color 0.2s ease,
+		border-color 0.2s ease;
+}
+
+.chat-sender.ant-sender .ant-sender-input-slot:empty::before,
+.chat-sender.ant-sender .ant-sender-input-slot::before,
+.chat-sender.ant-sender [contenteditable='true']:empty::before,
+.chat-sender.ant-sender .ant-sender-input-slot[data-placeholder]::before,
+.chat-sender.ant-sender .ant-sender-slot-content:empty::after,
+.chat-sender.ant-sender .ant-sender-slot-content[data-placeholder]::after,
+.chat-sender.ant-sender .ant-sender-skill.ant-sender-skill-empty::after,
+.chat-sender.ant-sender textarea::placeholder,
+.chat-sender.ant-sender .ant-input::placeholder,
+.chat-sender.ant-sender .ant-input-textarea textarea::placeholder {
+	background: transparent !important;
+	transition: color 0.2s ease !important;
+}
+
+.chat-sender.ant-sender .ant-sender-footer,
+.chat-sender-custom-footer {
+	background: var(--app-panel) !important;
+	transition:
+		background-color 0.2s ease,
+		border-color 0.2s ease,
+		color 0.2s ease;
+}
+
+.chat-sender-custom-footer > * {
+	background: transparent !important;
+}
+
 /* Prompts 文字跟随全局主题变量 */
 .ant-prompts .ant-prompts-title {
 	color: var(--app-prompt-title) !important;
+	transition: color 0.2s ease;
 }
 
 .ant-prompts .ant-prompts-item {
 	background: var(--app-panel) !important;
 	border-color: var(--app-border) !important;
+	transition:
+		background-color 0.2s ease,
+		border-color 0.2s ease,
+		color 0.2s ease;
+}
+
+.ant-prompts,
+.ant-prompts .ant-prompts-list,
+.ant-prompts .ant-prompts-wrap {
+	background: transparent !important;
 }
 
 .ant-prompts .ant-prompts-item:hover {

@@ -205,11 +205,8 @@ export default function Header() {
 				</button>
 
 				{/* Sign Up/in */}
-				<button className='cursor-pointer border [border-color:var(--app-border)] [color:var(--app-text)] hover:bg-[var(--app-hover)] rounded-full px-4 py-2 text-sm font-medium transition-colors'>
-					Sign up for free
-				</button>
 				<button className='cursor-pointer [background:var(--app-text)] [color:var(--app-bg)] rounded-full px-4 py-2 text-sm font-medium transition-colors opacity-95 hover:opacity-100'>
-					Log in
+					Sign up / Sign in
 				</button>
 			</div>
 		</header>

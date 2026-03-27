@@ -393,6 +393,7 @@ export default function ChatSender({
 			footer={(actionsNode) => {
 				return (
 					<Flex
+						className='chat-sender-custom-footer'
 						justify='space-between'
 						align='center'
 						gap='small'
