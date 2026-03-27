@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import '@heroui/styles';
 
 /* 全局默认颜色 */
 :root {
@@ -38,7 +39,7 @@
 	--app-input-text: #ffffff;
 	--app-input-placeholder: #8f8f8f;
 	--app-prompt-title: rgba(255, 255, 255, 0.55);
-	--app-prompt-desc: rgba(255, 255, 255, 0.70);
+	--app-prompt-desc: rgba(255, 255, 255, 0.7);
 	--app-send-btn-bg: #d4d4d4;
 	--app-send-btn-fg: #111111;
 }

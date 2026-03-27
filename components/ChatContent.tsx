@@ -9,7 +9,6 @@ import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Actions, Bubble, Sources, Think, ThoughtChain } from '@ant-design/x';
 import type {
-	ActionsFeedbackProps,
 	ActionsProps,
 	BubbleItemType,
 	SourcesProps,
@@ -45,9 +44,6 @@ export default function ChatContent() {
 	const [thinking, setThinking] = useState(false);
 	const [generating, setGenerating] = useState(false);
 	const [currentAiKey, setCurrentAiKey] = useState<string | null>(null);
-	const [feedbackMap, setFeedbackMap] = useState<
-		Record<string, ActionsFeedbackProps['value']>
-	>({});
 	const [sourcesMap, setSourcesMap] = useState<
 		Record<string, SourcesProps['items']>
 	>({});

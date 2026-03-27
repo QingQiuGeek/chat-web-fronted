@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@ant-design/x": "^2.4.0",
+    "@heroui/react": "^3.0.1",
+    "@heroui/styles": "^3.0.1",
     "antd": "^6.3.4",
     "chrome-devtools-mcp": "^0.20.3",
     "next": "16.2.1",
