@@ -9,8 +9,10 @@ import {
 	DropdownTrigger,
 	IconPlus,
 } from '@heroui/react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTheme } from 'next-themes';
 import questionIcon from '@/app/question.png';
+import Login from './Login';
 
 type ModelOption = {
 	key: string;
@@ -58,9 +60,11 @@ const MODEL_OPTIONS: ModelOption[] = [
 ];
 
 export default function Header() {
+	const { theme, resolvedTheme, setTheme } = useTheme();
 	const [selectedModelKey, setSelectedModelKey] = useState(
 		MODEL_OPTIONS[0].key,
 	);
+	const currentTheme = theme === 'system' ? resolvedTheme : theme;
 
 	const selectedModel = useMemo(
 		() =>
@@ -76,19 +80,21 @@ export default function Header() {
 
 	// 主题切换函数
 	const toggleTheme = () => {
-		const html = document.documentElement;
-		const nextIsDark = !html.classList.contains('dark');
-		html.classList.toggle('dark', nextIsDark);
-		localStorage.setItem('theme', nextIsDark ? 'dark' : 'light');
-		document.cookie = `theme=${nextIsDark ? 'dark' : 'light'}; path=/; max-age=31536000`;
+		setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+	};
+
+	useEffect(() => {
+		if (currentTheme !== 'light' && currentTheme !== 'dark') return;
+
+		document.cookie = `theme=${currentTheme}; path=/; max-age=31536000`;
 		const metaThemeColor = document.querySelector('meta[name="theme-color"]');
 		if (metaThemeColor) {
 			metaThemeColor.setAttribute(
 				'content',
-				nextIsDark ? '#212121' : '#ffffff',
+				currentTheme === 'dark' ? '#212121' : '#ffffff',
 			);
 		}
-	};
+	}, [currentTheme]);
 
 	return (
 		<header className='flex items-center justify-between px-4 h-14 sticky top-0 z-10 [background:var(--app-panel)]'>
@@ -205,9 +211,7 @@ export default function Header() {
 				</button>
 
 				{/* Sign Up/in */}
-				<button className='cursor-pointer [background:var(--app-text)] [color:var(--app-bg)] rounded-full px-4 py-2 text-sm font-medium transition-colors opacity-95 hover:opacity-100'>
-					Sign up / Sign in
-				</button>
+				<Login />
 			</div>
 		</header>
 	);
