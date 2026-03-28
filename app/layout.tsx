@@ -1,6 +1,6 @@
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 import './globals.css';
-import { Providers } from './providers';
+import Providers from '../components/providers';
 
 export default async function RootLayout({
 	children,
