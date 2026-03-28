@@ -51,7 +51,12 @@ type FooterSwitchItem = {
 };
 
 function FooterDivider() {
-	return <Divider orientation='vertical' />;
+	return (
+		<Divider
+			orientation='vertical'
+			style={{ marginInline: 4, height: 16 }}
+		/>
+	);
 }
 
 type SpeechRecognitionResultLike = {
@@ -400,7 +405,7 @@ export default function ChatSender({
 						wrap
 					>
 						<Flex
-							gap='small'
+							gap={2}
 							align='center'
 							wrap
 						>
@@ -408,7 +413,7 @@ export default function ChatSender({
 								<Flex
 									key={item.key}
 									align='center'
-									gap='small'
+									gap={2}
 								>
 									<Sender.Switch
 										icon={item.icon}
@@ -425,7 +430,7 @@ export default function ChatSender({
 						</Flex>
 						<Flex
 							align='center'
-							gap='small'
+							gap={2}
 						>
 							<Sender.Switch
 								icon={<ApiOutlined />}

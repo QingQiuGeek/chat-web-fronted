@@ -114,8 +114,14 @@ export default function ChatContent() {
 	const scrollToLatest = useCallback((behavior: ScrollBehavior = 'auto') => {
 		const container = conversationRef.current;
 		if (!container) return;
-		container.scrollTo({
-			top: container.scrollHeight,
+
+		const bubbleScrollBox = container.querySelector<HTMLElement>(
+			'.ant-bubble-list-scroll-box',
+		);
+		const scrollTarget = bubbleScrollBox ?? container;
+
+		scrollTarget.scrollTo({
+			top: scrollTarget.scrollHeight,
 			behavior,
 		});
 	}, []);

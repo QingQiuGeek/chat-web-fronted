@@ -94,7 +94,7 @@ function AuthForm({
 					<Input
 						name='code'
 						type='text'
-						placeholder='4-6 位数字'
+						placeholder='6 位数字'
 						value={fields.code}
 						onChange={(event) =>
 							onFieldChange('code', event.currentTarget.value)
@@ -247,7 +247,7 @@ export default function Login({
 							</span>
 						</ModalHeader>
 
-						<ModalBody className='pb-5'>
+						<ModalBody className='pb-5 px-1'>
 							<AuthForm
 								onSubmit={handleSubmit}
 								onSendCode={handleSendCode}

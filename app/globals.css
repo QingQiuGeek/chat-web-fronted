@@ -521,6 +521,36 @@ textarea:focus {
 	background: transparent !important;
 }
 
+/* Sender.Switch 与语音/附件按钮保持一致的悬浮反馈 */
+.chat-sender.ant-sender .ant-sender-switch .ant-btn {
+	transition:
+		background-color 0.2s ease,
+		border-color 0.2s ease,
+		color 0.2s ease;
+}
+
+.chat-sender.ant-sender
+	.ant-sender-switch
+	.ant-sender-switch-content.ant-btn:hover,
+.chat-sender.ant-sender
+	.ant-sender-switch
+	.ant-sender-switch-content.ant-btn:focus-visible {
+	background-color: rgba(0, 0, 0, 0.04) !important;
+	border-color: var(--app-border) !important;
+	color: var(--app-text) !important;
+}
+
+.dark
+	.chat-sender.ant-sender
+	.ant-sender-switch
+	.ant-sender-switch-content.ant-btn:hover,
+.dark
+	.chat-sender.ant-sender
+	.ant-sender-switch
+	.ant-sender-switch-content.ant-btn:focus-visible {
+	background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
 /* Prompts 文字跟随全局主题变量 */
 .ant-prompts .ant-prompts-title {
 	color: var(--app-prompt-title) !important;
@@ -530,24 +560,50 @@ textarea:focus {
 .ant-prompts .ant-prompts-item {
 	background: var(--app-panel) !important;
 	border-color: var(--app-border) !important;
+	cursor: pointer;
 	transition:
 		background-color 0.2s ease,
-		border-color 0.2s ease,
-		color 0.2s ease;
+		color 0.2s ease,
+		transform 0.2s ease,
+		box-shadow 0.2s ease;
 }
 
 .ant-prompts,
 .ant-prompts .ant-prompts-list,
 .ant-prompts .ant-prompts-wrap {
 	background: transparent !important;
+	overflow: visible !important;
+}
+
+.ant-prompts .ant-prompts-list.ant-prompts-list-wrap {
+	overflow: visible !important;
 }
 
 .ant-prompts .ant-prompts-item:hover {
 	background: color-mix(
 		in srgb,
-		var(--app-panel) 88%,
+		var(--app-panel) 82%,
 		var(--app-hover)
 	) !important;
+	border-color: color-mix(in srgb, var(--app-border) 88%, #9ca3af) !important;
+	transform: none !important;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.ant-prompts .ant-prompts-item:focus-visible {
+	background: color-mix(
+		in srgb,
+		var(--app-panel) 82%,
+		var(--app-hover)
+	) !important;
+	border-color: color-mix(in srgb, var(--app-border) 88%, #9ca3af) !important;
+	transform: none !important;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.dark .ant-prompts .ant-prompts-item:hover,
+.dark .ant-prompts .ant-prompts-item:focus-visible {
+	box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
 }
 
 .ant-prompts .ant-prompts-item:active {
