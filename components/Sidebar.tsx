@@ -24,6 +24,7 @@ import {
 	type ChatFirstUserMessageDetail,
 } from './chatEvents';
 import threeBars from '@/app/three-bars.png';
+import Login from './Login';
 
 type ConversationRecord = {
 	key: string;
@@ -336,9 +337,7 @@ export default function Sidebar() {
 								Save your chat history, share chats, and personalize your
 								experience.
 							</p>
-							<button className='cursor-pointer [background:var(--app-text)] [color:var(--app-bg)] rounded-full px-4 py-2 text-sm font-medium transition-colors opacity-95 hover:opacity-100'>
-								Sign up / Sign in
-							</button>
+							<Login triggerClassName='w-full cursor-pointer [background:var(--app-text)] [color:var(--app-bg)] rounded-full px-4 py-2 text-sm font-medium transition-colors opacity-95 hover:opacity-100' />
 						</div>
 					</div>
 				</>
