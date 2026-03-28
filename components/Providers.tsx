@@ -1,6 +1,7 @@
 'use client';
 
 import { ThemeProvider } from 'next-themes';
+import { XProvider } from '@ant-design/x';
 
 function Providers({ children }: { children: React.ReactNode }) {
 	return (
@@ -11,7 +12,7 @@ function Providers({ children }: { children: React.ReactNode }) {
 			themes={['light', 'dark']}
 			disableTransitionOnChange
 		>
-			{children}
+			<XProvider>{children}</XProvider>
 		</ThemeProvider>
 	);
 }
