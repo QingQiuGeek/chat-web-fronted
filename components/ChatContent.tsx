@@ -15,7 +15,8 @@ import type {
 	ThoughtChainItemType,
 } from '@ant-design/x';
 import { Avatar } from 'antd';
-import aiAvatar from '../app/ai.jpg';
+import favicon from '../app/favicon.ico';
+
 import {
 	CHAT_FIRST_USER_MESSAGE_EVENT,
 	SIDEBAR_ACTIVE_CONVERSATION_EVENT,
@@ -535,8 +536,8 @@ export default function ChatContent() {
 							: false,
 					avatar: (
 						<Avatar
-							size={35}
-							src={aiAvatar.src}
+							size={40}
+							src={favicon.src}
 						/>
 					),
 					header: isAiMessage ? (

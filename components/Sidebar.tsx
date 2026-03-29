@@ -7,13 +7,15 @@ import {
 	SearchOutlined,
 	ShareAltOutlined,
 } from '@ant-design/icons';
+import favicon from '../app/favicon.ico';
+
 import {
 	Conversations,
 	type ConversationItemType,
 	type ConversationsProps,
 } from '@ant-design/x';
 import type { MenuProps } from 'antd';
-import { Button, Input, message } from 'antd';
+import { Avatar, Button, Input, message } from 'antd';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import Image from 'next/image';
@@ -270,20 +272,17 @@ export default function Sidebar() {
 			>
 				{/* logo */}
 				<div
-					className={`h-8 w-8 rounded-full bg-white items-center justify-center flex-shrink-0 ${isOpen ? 'flex' : 'hidden'}`}
+					className={`items-center gap-2 flex-shrink-0 ${isOpen ? 'flex' : 'hidden'}`}
 				>
-					<svg
-						width='20'
-						height='20'
-						viewBox='0 0 24 24'
-						fill='none'
-						xmlns='http://www.w3.org/2000/svg'
-					>
-						<path
-							d='M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2057 5.9847 5.9847 0 0 0 3.998-2.9001 6.0557 6.0557 0 0 0-.7478-7.0731zM13.0652 22.492c-.8782 0-1.7145-.3165-2.3855-.9041l.1424-.0835 4.2965-2.4828a1.6937 1.6937 0 0 0 .8488-1.4721V9.5915l2.4287 1.4027a1.6946 1.6946 0 0 1 .8492 1.4716v5.8275a4.3686 4.3686 0 0 1-4.3685 4.3685h-1.8116zm-8.8344-3.3283a4.3639 4.3639 0 0 1-1.258-3.0515v-5.827l2.4287-1.4028v7.9575a1.6955 1.6955 0 0 0 .8492 1.4716l4.2965 2.4828-.1428.0826-4.2965 2.4828a1.695 1.695 0 0 1-1.8771-.0011V20.892zm-1.0718-11.838c.671-.5875 1.5074-.904 2.3855-.904h1.8115l.1424.0835-4.2965 2.4828a1.694 1.694 0 0 0-.8488 1.4721v7.9575l-2.4287-1.4027A1.6946 1.6946 0 0 1 1.075 16.273V10.445a4.3686 4.3686 0 0 1 2.0838-3.1186zM18.845 3.3283a4.3639 4.3639 0 0 1 1.258 3.0515v5.827l-2.4287 1.4028V5.6521a1.6955 1.6955 0 0 0-.8492-1.4716L12.5286 1.6977l.1428-.0826 4.2965-2.4828a1.695 1.695 0 0 1 1.8771.0011v1.6565zm1.0718 11.838c-.671.5875-1.5074.904-2.3855.904h-1.8115l-.1424-.0835 4.2965-2.4828a1.694 1.694 0 0 0 .8488-1.4721V4.0744l2.4287 1.4027a1.6946 1.6946 0 0 1 .8492 1.4716v5.8275a4.3686 4.3686 0 0 1-2.0838 3.1186zm-6.6575-3.3283h-3.418v-1.9723l1.709-1.0028 1.709 1.0028v1.9723z'
-							fill='#000'
-						></path>
-					</svg>
+					<div className='h-8 w-8 rounded-full bg-white items-center justify-center flex'>
+						<Avatar
+							size={40}
+							src={favicon.src}
+						/>
+					</div>
+					<span className='text-xl font-semibold text-[var(--app-text)]'>
+						OpenChat
+					</span>
 				</div>
 				{/* Toggle Button */}
 				<button
