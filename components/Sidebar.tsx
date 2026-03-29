@@ -276,7 +276,7 @@ export default function Sidebar() {
 				>
 					<div className='h-8 w-8 rounded-full bg-white items-center justify-center flex'>
 						<Avatar
-							size={40}
+							size={45}
 							src={favicon.src}
 						/>
 					</div>

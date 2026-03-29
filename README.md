@@ -1,3 +1,11 @@
+- 临时对话
+
+- 对话压缩、上下文容量显示
+
+- 知识库
+
+- 智能体
+
 使用[variant](https://variant.com/)进行UI设计的AIChat网站：
 
 ![](img/image.png)
